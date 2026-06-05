@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>我的投资监控台</title>
+    <meta name="theme-color" content="#10221d" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="投资监控台" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="icon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark">¥</div>
+          <div>
+            <h1>投资监控台</h1>
+            <p>仓位 · 信号 · 预警</p>
+          </div>
+        </div>
+
+        <nav class="nav-list" aria-label="主导航">
+          <a href="#dashboard" class="active">总览</a>
+          <a href="#market">大盘</a>
+          <a href="#live">实时</a>
+          <a href="#portfolio">持仓</a>
+          <a href="#signals">信号</a>
+          <a href="#feeds">资讯</a>
+          <a href="#alerts">预警</a>
+          <a href="#report">复盘</a>
+        </nav>
+
+        <section class="risk-box">
+          <h2>风险边界</h2>
+          <p>这里是个人决策辅助工具，不替代专业投顾意见，也不承诺收益。所有动作建议都应结合你的真实账户和风险承受能力复核。</p>
+        </section>
+      </aside>
+
+      <section class="workspace">
+        <header class="topbar" id="dashboard">
+          <div>
+            <p class="eyebrow">Personal Monitor · <span id="lastUpdate">等待刷新</span></p>
+            <h2>你的个人投资监控台</h2>
+          </div>
+          <div class="top-actions">
+            <button class="secondary-action" id="toggleAutoBtn" type="button">暂停自动刷新</button>
+            <button class="primary-action" id="refreshBtn" type="button">立即刷新</button>
+          </div>
+        </header>
+
+        <section class="summary-grid" aria-label="组合摘要">
+          <article class="metric-card">
+            <span>总资产</span>
+            <strong id="totalValue">--</strong>
+            <small id="cashRatio">现金占比 --</small>
+          </article>
+          <article class="metric-card">
+            <span>风险评分</span>
+            <strong id="riskScore">--</strong>
+            <small id="riskLabel">等待计算</small>
+          </article>
+          <article class="metric-card">
+            <span>机会评分</span>
+            <strong id="opportunityScore">--</strong>
+            <small id="opportunityLabel">等待计算</small>
+          </article>
+          <article class="metric-card">
+            <span>今日动作</span>
+            <strong id="todayAction">--</strong>
+            <small>基于仓位、偏好、行情和信号</small>
+          </article>
+        </section>
+
+        <section class="panel market-panel" id="market">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">Market Index</p>
+              <h3>大盘指数 K 线</h3>
+            </div>
+            <div class="chart-controls">
+              <select id="indexSymbol">
+                <option value="sh000001">上证指数</option>
+                <option value="sz399001">深证成指</option>
+                <option value="sz399006">创业板指</option>
+                <option value="sh000300">沪深300</option>
+                <option value="hkHSI">恒生指数</option>
+                <option value="usIXIC">纳斯达克</option>
+              </select>
+              <select id="klinePeriod">
+                <option value="1m">1分</option>
+                <option value="5m">5分</option>
+                <option value="30m">30分</option>
+                <option value="1d">日K</option>
+              </select>
+            </div>
+          </div>
+          <div class="chart-summary" id="indexSummary"></div>
+          <div class="chart-wrap">
+            <canvas id="klineCanvas" width="960" height="420"></canvas>
+          </div>
+        </section>
+
+        <section class="two-column">
+          <article class="panel" id="live">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Live Watch</p>
+                <h3>实时跟踪</h3>
+              </div>
+              <span class="status-pill" id="dataMode">模拟行情源</span>
+            </div>
+            <div class="quote-grid" id="quoteGrid"></div>
+          </article>
+
+          <article class="panel" id="alerts">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Alerts</p>
+                <h3>今日预警</h3>
+              </div>
+              <span class="status-pill" id="alertCount">0 条</span>
+            </div>
+            <div class="alert-list" id="alertList"></div>
+          </article>
+        </section>
+
+        <section class="two-column">
+          <article class="panel" id="portfolio">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Portfolio</p>
+                <h3>我的仓位</h3>
+              </div>
+              <button class="icon-button" id="addHoldingBtn" type="button" title="添加持仓">+</button>
+            </div>
+
+            <div class="form-grid">
+              <label>
+                风险偏好
+                <select id="riskPreference">
+                  <option value="conservative">稳健</option>
+                  <option value="balanced">均衡</option>
+                  <option value="aggressive">进取</option>
+                </select>
+              </label>
+              <label>
+                最大单标的仓位
+                <input id="maxSinglePosition" type="number" min="5" max="80" />
+              </label>
+              <label>
+                目标现金比例
+                <input id="targetCash" type="number" min="0" max="80" />
+              </label>
+              <label>
+                偏好方向
+                <select id="themePreference">
+                  <option value="quality">低波动/质量</option>
+                  <option value="growth">成长科技</option>
+                  <option value="dividend">红利价值</option>
+                  <option value="gold">黄金避险</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>标的</th>
+                    <th>代码</th>
+                    <th>类型</th>
+                    <th>市值</th>
+                    <th>风险</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="holdingRows"></tbody>
+              </table>
+            </div>
+          </article>
+
+          <article class="panel" id="signals">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Signals</p>
+                <h3>四维信号</h3>
+              </div>
+              <span class="status-pill">可手动校准</span>
+            </div>
+
+            <div class="signal-list">
+              <label class="signal-row">
+                <span>消息面</span>
+                <input data-signal="news" type="range" min="-100" max="100" />
+                <strong id="newsValue">0</strong>
+              </label>
+              <label class="signal-row">
+                <span>基本面</span>
+                <input data-signal="fundamental" type="range" min="-100" max="100" />
+                <strong id="fundamentalValue">0</strong>
+              </label>
+              <label class="signal-row">
+                <span>政策性</span>
+                <input data-signal="policy" type="range" min="-100" max="100" />
+                <strong id="policyValue">0</strong>
+              </label>
+              <label class="signal-row">
+                <span>市场情绪</span>
+                <input data-signal="sentiment" type="range" min="-100" max="100" />
+                <strong id="sentimentValue">0</strong>
+              </label>
+            </div>
+
+            <div class="insight-box" id="signalNarrative"></div>
+          </article>
+        </section>
+
+        <section class="two-column">
+          <article class="panel" id="ideas">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Ideas</p>
+                <h3>推荐候选</h3>
+              </div>
+              <button class="secondary-action" id="rebuildIdeasBtn" type="button">重新推荐</button>
+            </div>
+            <div class="idea-list" id="ideaList"></div>
+          </article>
+
+          <article class="panel" id="report">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Daily Report</p>
+                <h3>每日复盘</h3>
+              </div>
+              <button class="secondary-action" id="copyReportBtn" type="button">复制摘要</button>
+            </div>
+            <div class="report-box" id="dailyReport"></div>
+          </article>
+        </section>
+
+        <section class="two-column" id="feeds">
+          <article class="panel">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Fund NAV</p>
+                <h3>基金净值</h3>
+              </div>
+              <span class="status-pill" id="fundStatus">模拟/接口兜底</span>
+            </div>
+            <div class="feed-list" id="fundList"></div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">News & Sentiment</p>
+                <h3>新闻情绪</h3>
+              </div>
+              <span class="status-pill" id="newsStatus">模拟/接口兜底</span>
+            </div>
+            <div class="feed-list" id="newsList"></div>
+          </article>
+        </section>
+
+        <section class="panel" id="settings">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">Data Source</p>
+              <h3>数据源设置</h3>
+            </div>
+            <span class="status-pill">第一版支持模拟/手动</span>
+          </div>
+          <div class="settings-grid">
+            <label>
+              刷新频率
+              <select id="refreshInterval">
+                <option value="15">15 秒</option>
+                <option value="30">30 秒</option>
+                <option value="60">1 分钟</option>
+                <option value="300">5 分钟</option>
+              </select>
+            </label>
+            <label>
+              行情模式
+              <select id="marketMode">
+                <option value="demo">模拟实时行情</option>
+                <option value="external">外部接口行情</option>
+                <option value="manual">手动录入/外部接口预留</option>
+              </select>
+            </label>
+            <label>
+              跌幅预警
+              <input id="dropAlert" type="number" min="1" max="20" />
+            </label>
+            <label>
+              涨幅预警
+              <input id="riseAlert" type="number" min="1" max="20" />
+            </label>
+            <label>
+              行情接口 URL
+              <input id="quoteEndpoint" placeholder="https://example.com/quotes" />
+            </label>
+            <label>
+              基金净值接口 URL
+              <input id="fundEndpoint" placeholder="https://example.com/funds" />
+            </label>
+            <label>
+              新闻接口 URL
+              <input id="newsEndpoint" placeholder="https://example.com/news" />
+            </label>
+            <label>
+              情绪接口 URL
+              <input id="sentimentEndpoint" placeholder="https://example.com/sentiment" />
+            </label>
+            <label>
+              指数K线接口 URL
+              <input id="indexEndpoint" placeholder="https://example.com/index-kline" />
+            </label>
+            <label class="wide-field">
+              API Key
+              <input id="apiKey" placeholder="可选，保存在本地浏览器" />
+            </label>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <dialog id="holdingDialog">
+      <form method="dialog" class="dialog-card">
+        <h3>添加持仓</h3>
+        <label>
+          名称
+          <input id="newName" placeholder="例如：沪深300ETF" />
+        </label>
+        <label>
+          代码
+          <input id="newCode" placeholder="例如：510300" />
+        </label>
+        <label>
+          类型
+          <select id="newType">
+            <option value="股票">股票</option>
+            <option value="基金">基金</option>
+            <option value="黄金">黄金</option>
+            <option value="现金">现金</option>
+          </select>
+        </label>
+        <label>
+          市值
+          <input id="newValue" type="number" min="0" placeholder="10000" />
+        </label>
+        <label>
+          风险
+          <select id="newRisk">
+            <option value="low">低</option>
+            <option value="medium" selected>中</option>
+            <option value="high">高</option>
+          </select>
+        </label>
+        <div class="dialog-actions">
+          <button type="button" class="secondary-action" id="cancelDialogBtn">取消</button>
+          <button type="submit" class="primary-action">保存</button>
+        </div>
+      </form>
+    </dialog>
+
+    <script src="app.js"></script>
+  </body>
+</html>
