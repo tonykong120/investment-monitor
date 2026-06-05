@@ -1,0 +1,18 @@
+{
+  "name": "我的投资监控台",
+  "short_name": "投资监控台",
+  "description": "个人仓位、行情、基金净值、新闻情绪和预警监控台。",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f5f7f4",
+  "theme_color": "#10221d",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
