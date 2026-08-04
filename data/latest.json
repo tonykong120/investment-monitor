@@ -1,11 +1,18 @@
 {
-  "updated_at": "尚未运行",
+  "updated_at": "2026-08-04 14:01:36",
   "market": {
-    "score": "—",
-    "up_ratio": "—",
-    "median_pct": "—",
+    "score": 5,
+    "up_ratio": 0.0,
+    "median_pct": 0,
     "universe": 0
   },
   "opportunities": [],
-  "candidates": []
+  "candidates": [],
+  "rules": {
+    "price": "5-30元",
+    "amount": "≥5亿元",
+    "turnover": "≥1%",
+    "day_pct": "-7.5%~+5%",
+    "excluded": "科创/创业/北交/ST/退市"
+  }
 }
