@@ -13,14 +13,22 @@ jobs:
   scan:
     runs-on: ubuntu-latest
     timeout-minutes: 8
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install requests
+
+      - name: Install dependencies
+        run: pip install requests
+
       - name: Scan A shares
         run: python scanner.py
+
       - name: Commit latest data
         run: |
           git config user.name "market-scan-bot"
@@ -28,4 +36,3 @@ jobs:
           git add data/latest.json
           git diff --cached --quiet || git commit -m "chore: refresh market scan"
           git push
-
