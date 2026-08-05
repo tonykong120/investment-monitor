@@ -1,373 +1,66 @@
-<!doctype html>
-<html lang="zh-CN">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>我的投资监控台</title>
-    <meta name="theme-color" content="#10221d" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-title" content="投资监控台" />
-    <link rel="manifest" href="manifest.webmanifest" />
-    <link rel="icon" href="icon.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="styles.css" />
-  </head>
-  <body>
-    <main class="app-shell">
-      <aside class="sidebar">
-        <div class="brand">
-          <div class="brand-mark">¥</div>
-          <div>
-            <h1>投资监控台</h1>
-            <p>仓位 · 信号 · 预警</p>
-          </div>
-        </div>
-
-        <nav class="nav-list" aria-label="主导航">
-          <a href="#dashboard" class="active">总览</a>
-          <a href="#market">大盘</a>
-          <a href="#live">实时</a>
-          <a href="#portfolio">持仓</a>
-          <a href="#signals">信号</a>
-          <a href="#feeds">资讯</a>
-          <a href="#alerts">预警</a>
-          <a href="#report">复盘</a>
-        </nav>
-
-        <section class="risk-box">
-          <h2>风险边界</h2>
-          <p>这里是个人决策辅助工具，不替代专业投顾意见，也不承诺收益。所有动作建议都应结合你的真实账户和风险承受能力复核。</p>
-        </section>
-      </aside>
-
-      <section class="workspace">
-        <header class="topbar" id="dashboard">
-          <div>
-            <p class="eyebrow">Personal Monitor · <span id="lastUpdate">等待刷新</span></p>
-            <h2>你的个人投资监控台</h2>
-          </div>
-          <div class="top-actions">
-            <button class="secondary-action" id="toggleAutoBtn" type="button">暂停自动刷新</button>
-            <button class="primary-action" id="refreshBtn" type="button">立即刷新</button>
-          </div>
-        </header>
-
-        <section class="summary-grid" aria-label="组合摘要">
-          <article class="metric-card">
-            <span>总资产</span>
-            <strong id="totalValue">--</strong>
-            <small id="cashRatio">现金占比 --</small>
-          </article>
-          <article class="metric-card">
-            <span>风险评分</span>
-            <strong id="riskScore">--</strong>
-            <small id="riskLabel">等待计算</small>
-          </article>
-          <article class="metric-card">
-            <span>机会评分</span>
-            <strong id="opportunityScore">--</strong>
-            <small id="opportunityLabel">等待计算</small>
-          </article>
-          <article class="metric-card">
-            <span>今日动作</span>
-            <strong id="todayAction">--</strong>
-            <small>基于仓位、偏好、行情和信号</small>
-          </article>
-        </section>
-
-        <section class="panel market-panel" id="market">
-          <div class="panel-head">
-            <div>
-              <p class="eyebrow">Market Index</p>
-              <h3>大盘指数 K 线</h3>
-            </div>
-            <div class="chart-controls">
-              <select id="indexSymbol">
-                <option value="sh000001">上证指数</option>
-                <option value="sz399001">深证成指</option>
-                <option value="sz399006">创业板指</option>
-                <option value="sh000300">沪深300</option>
-                <option value="hkHSI">恒生指数</option>
-                <option value="usIXIC">纳斯达克</option>
-              </select>
-              <select id="klinePeriod">
-                <option value="1m">1分</option>
-                <option value="5m">5分</option>
-                <option value="30m">30分</option>
-                <option value="1d">日K</option>
-              </select>
-            </div>
-          </div>
-          <div class="chart-summary" id="indexSummary"></div>
-          <div class="chart-wrap">
-            <canvas id="klineCanvas" width="960" height="420"></canvas>
-          </div>
-        </section>
-
-        <section class="two-column">
-          <article class="panel" id="live">
-            <div class="panel-head">
-              <div>
-                <p class="eyebrow">Live Watch</p>
-                <h3>实时跟踪</h3>
-              </div>
-              <span class="status-pill" id="dataMode">模拟行情源</span>
-            </div>
-            <div class="quote-grid" id="quoteGrid"></div>
-          </article>
-
-          <article class="panel" id="alerts">
-            <div class="panel-head">
-              <div>
-                <p class="eyebrow">Alerts</p>
-                <h3>今日预警</h3>
-              </div>
-              <span class="status-pill" id="alertCount">0 条</span>
-            </div>
-            <div class="alert-list" id="alertList"></div>
-          </article>
-        </section>
-
-        <section class="two-column">
-          <article class="panel" id="portfolio">
-            <div class="panel-head">
-              <div>
-                <p class="eyebrow">Portfolio</p>
-                <h3>我的仓位</h3>
-              </div>
-              <button class="icon-button" id="addHoldingBtn" type="button" title="添加持仓">+</button>
-            </div>
-
-            <div class="form-grid">
-              <label>
-                风险偏好
-                <select id="riskPreference">
-                  <option value="conservative">稳健</option>
-                  <option value="balanced">均衡</option>
-                  <option value="aggressive">进取</option>
-                </select>
-              </label>
-              <label>
-                最大单标的仓位
-                <input id="maxSinglePosition" type="number" min="5" max="80" />
-              </label>
-              <label>
-                目标现金比例
-                <input id="targetCash" type="number" min="0" max="80" />
-              </label>
-              <label>
-                偏好方向
-                <select id="themePreference">
-                  <option value="quality">低波动/质量</option>
-                  <option value="growth">成长科技</option>
-                  <option value="dividend">红利价值</option>
-                  <option value="gold">黄金避险</option>
-                </select>
-              </label>
-            </div>
-
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>标的</th>
-                    <th>代码</th>
-                    <th>类型</th>
-                    <th>市值</th>
-                    <th>风险</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody id="holdingRows"></tbody>
-              </table>
-            </div>
-          </article>
-
-          <article class="panel" id="signals">
-            <div class="panel-head">
-              <div>
-                <p class="eyebrow">Signals</p>
-                <h3>四维信号</h3>
-              </div>
-              <span class="status-pill">可手动校准</span>
-            </div>
-
-            <div class="signal-list">
-              <label class="signal-row">
-                <span>消息面</span>
-                <input data-signal="news" type="range" min="-100" max="100" />
-                <strong id="newsValue">0</strong>
-              </label>
-              <label class="signal-row">
-                <span>基本面</span>
-                <input data-signal="fundamental" type="range" min="-100" max="100" />
-                <strong id="fundamentalValue">0</strong>
-              </label>
-              <label class="signal-row">
-                <span>政策性</span>
-                <input data-signal="policy" type="range" min="-100" max="100" />
-                <strong id="policyValue">0</strong>
-              </label>
-              <label class="signal-row">
-                <span>市场情绪</span>
-                <input data-signal="sentiment" type="range" min="-100" max="100" />
-                <strong id="sentimentValue">0</strong>
-              </label>
-            </div>
-
-            <div class="insight-box" id="signalNarrative"></div>
-          </article>
-        </section>
-
-        <section class="two-column">
-          <article class="panel" id="ideas">
-            <div class="panel-head">
-              <div>
-                <p class="eyebrow">Ideas</p>
-                <h3>推荐候选</h3>
-              </div>
-              <button class="secondary-action" id="rebuildIdeasBtn" type="button">重新推荐</button>
-            </div>
-            <div class="idea-list" id="ideaList"></div>
-          </article>
-
-          <article class="panel" id="report">
-            <div class="panel-head">
-              <div>
-                <p class="eyebrow">Daily Report</p>
-                <h3>每日复盘</h3>
-              </div>
-              <button class="secondary-action" id="copyReportBtn" type="button">复制摘要</button>
-            </div>
-            <div class="report-box" id="dailyReport"></div>
-          </article>
-        </section>
-
-        <section class="two-column" id="feeds">
-          <article class="panel">
-            <div class="panel-head">
-              <div>
-                <p class="eyebrow">Fund NAV</p>
-                <h3>基金净值</h3>
-              </div>
-              <span class="status-pill" id="fundStatus">模拟/接口兜底</span>
-            </div>
-            <div class="feed-list" id="fundList"></div>
-          </article>
-
-          <article class="panel">
-            <div class="panel-head">
-              <div>
-                <p class="eyebrow">News & Sentiment</p>
-                <h3>新闻情绪</h3>
-              </div>
-              <span class="status-pill" id="newsStatus">模拟/接口兜底</span>
-            </div>
-            <div class="feed-list" id="newsList"></div>
-          </article>
-        </section>
-
-        <section class="panel" id="settings">
-          <div class="panel-head">
-            <div>
-              <p class="eyebrow">Data Source</p>
-              <h3>数据源设置</h3>
-            </div>
-            <span class="status-pill">第一版支持模拟/手动</span>
-          </div>
-          <div class="settings-grid">
-            <label>
-              刷新频率
-              <select id="refreshInterval">
-                <option value="15">15 秒</option>
-                <option value="30">30 秒</option>
-                <option value="60">1 分钟</option>
-                <option value="300">5 分钟</option>
-              </select>
-            </label>
-            <label>
-              行情模式
-              <select id="marketMode">
-                <option value="demo">模拟实时行情</option>
-                <option value="external">外部接口行情</option>
-                <option value="manual">手动录入/外部接口预留</option>
-              </select>
-            </label>
-            <label>
-              跌幅预警
-              <input id="dropAlert" type="number" min="1" max="20" />
-            </label>
-            <label>
-              涨幅预警
-              <input id="riseAlert" type="number" min="1" max="20" />
-            </label>
-            <label>
-              行情接口 URL
-              <input id="quoteEndpoint" placeholder="https://example.com/quotes" />
-            </label>
-            <label>
-              基金净值接口 URL
-              <input id="fundEndpoint" placeholder="https://example.com/funds" />
-            </label>
-            <label>
-              新闻接口 URL
-              <input id="newsEndpoint" placeholder="https://example.com/news" />
-            </label>
-            <label>
-              情绪接口 URL
-              <input id="sentimentEndpoint" placeholder="https://example.com/sentiment" />
-            </label>
-            <label>
-              指数K线接口 URL
-              <input id="indexEndpoint" placeholder="https://example.com/index-kline" />
-            </label>
-            <label class="wide-field">
-              API Key
-              <input id="apiKey" placeholder="可选，保存在本地浏览器" />
-            </label>
-          </div>
-        </section>
-      </section>
-    </main>
-
-    <dialog id="holdingDialog">
-      <form method="dialog" class="dialog-card">
-        <h3>添加持仓</h3>
-        <label>
-          名称
-          <input id="newName" placeholder="例如：沪深300ETF" />
-        </label>
-        <label>
-          代码
-          <input id="newCode" placeholder="例如：510300" />
-        </label>
-        <label>
-          类型
-          <select id="newType">
-            <option value="股票">股票</option>
-            <option value="基金">基金</option>
-            <option value="黄金">黄金</option>
-            <option value="现金">现金</option>
-          </select>
-        </label>
-        <label>
-          市值
-          <input id="newValue" type="number" min="0" placeholder="10000" />
-        </label>
-        <label>
-          风险
-          <select id="newRisk">
-            <option value="low">低</option>
-            <option value="medium" selected>中</option>
-            <option value="high">高</option>
-          </select>
-        </label>
-        <div class="dialog-actions">
-          <button type="button" class="secondary-action" id="cancelDialogBtn">取消</button>
-          <button type="submit" class="primary-action">保存</button>
-        </div>
-      </form>
-    </dialog>
-
-    <script src="app.js"></script>
-  </body>
-</html>
+<!doctype html><html lang="zh-CN"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>短线机会工作台 V1.4</title>
+<style>
+:root{--bg:#0b0d10;--card:#14171c;--card2:#1a1e24;--line:#292f38;--txt:#f2f4f7;--mut:#9098a4;--g:#49d17d;--y:#efb64a;--r:#ef6965;--b:#79a1ff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font:14px/1.55 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:1480px;margin:auto;padding:22px}.top{display:flex;justify-content:space-between;align-items:end;gap:14px;margin-bottom:15px}
+h1{font-size:23px;margin:0}.sub,.mut{font-size:12px;color:var(--mut)}button{background:#2e5cff;color:white;border:0;border-radius:8px;padding:9px 13px;cursor:pointer}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:15px}.panel h2{font-size:14px;margin:0 0 11px}
+.banner{margin-bottom:12px;display:flex;justify-content:space-between;gap:10px;align-items:center}.grid{display:grid;grid-template-columns:1.42fr .58fr;gap:12px}.grid2{display:grid;grid-template-columns:1.15fr .85fr;gap:12px;margin-top:12px}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.metric{background:var(--card2);border:1px solid var(--line);border-radius:9px;padding:11px}.big{font-size:22px;font-weight:800}
+.cards{display:grid;gap:9px}.stock{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:13px}.stockrow{display:grid;grid-template-columns:1.05fr .42fr 1.18fr .9fr;gap:12px;align-items:center}
+.name{font-size:16px;font-weight:750}.score{font-size:27px;font-weight:850}.good{color:var(--g)}.warn{color:var(--y)}.bad{color:var(--r)}
+.tag{display:inline-block;border-radius:6px;padding:3px 7px;background:#20372a;color:var(--g);font-weight:700;font-size:12px}.tag.wait{background:#3a311e;color:var(--y)}
+.kv{font-size:12px;color:var(--mut);line-height:1.75}.kv b{color:var(--txt)}.chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px}.chip{padding:3px 7px;border-radius:999px;background:#202a23;color:#9de0b5;font-size:11px}.chip.w{background:#352a20;color:#efc17b}
+.buybox{border:1px solid #35563f;background:#14241a;border-radius:9px;padding:9px 10px}.buyprice{font-size:19px;font-weight:850;color:var(--g);letter-spacing:.2px}.win{font-size:17px;font-weight:800}.tiny{font-size:11px;color:var(--mut)}
+table{width:100%;border-collapse:collapse;font-size:12px}td,th{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line)}th{color:var(--mut);font-weight:500}
+.health{display:flex;gap:7px;flex-wrap:wrap}.health span{font-size:11px;padding:4px 7px;border-radius:999px;background:#20252c}.dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;background:var(--g)}.dot.off{background:var(--r)}
+.empty{background:var(--card2);padding:25px;border-radius:9px;text-align:center;color:var(--mut)}details{margin-top:10px}summary{cursor:pointer;color:var(--mut);font-size:12px}
+input{background:#111419;color:white;border:1px solid var(--line);border-radius:7px;padding:7px;width:100%}.journal{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:7px}
+.rank{display:inline-flex;width:22px;height:22px;border-radius:50%;align-items:center;justify-content:center;background:#252b34;color:#fff;font-weight:800;font-size:11px;margin-right:7px}
+@media(max-width:960px){.grid,.grid2{grid-template-columns:1fr}.metrics{grid-template-columns:1fr 1fr}.stockrow{grid-template-columns:1fr 1fr}.top,.banner{align-items:flex-start;flex-direction:column}.journal{grid-template-columns:1fr 1fr}}
+</style></head><body><div class="wrap">
+<div class="top"><div><h1>🎯 短线机会工作台 V1.4</h1><div class="sub">1～5个交易日｜最多5只机会｜明确买入价格｜历史信号胜率</div></div><button onclick="loadData()">刷新最新结果</button></div>
+<div class="panel banner"><div id="status">读取最新扫描结果…</div><div id="health" class="health"></div></div>
+<div class="grid">
+<section class="panel"><h2>今日机会（最多5只）</h2><div id="opps" class="cards"><div class="empty">读取中…</div></div><div class="tiny" style="margin-top:10px">胜率为该股历史同类技术结构回测：未来5个交易日内 +3.5% 目标先于 -2.5% 止损触发的比例，不代表未来必然概率。</div></section>
+<section class="panel"><h2>市场状态</h2><div class="metrics">
+<div class="metric"><div id="mScore" class="big">—</div><div class="mut">环境分</div></div><div class="metric"><div id="mState" class="big">—</div><div class="mut">状态</div></div><div class="metric"><div id="mUp" class="big">—</div><div class="mut">上涨占比</div></div><div class="metric"><div id="mMed" class="big">—</div><div class="mut">涨跌中位</div></div>
+</div><h2 style="margin-top:15px">自选监控</h2><div id="watch" class="cards"></div></section>
+</div>
+<div class="grid2">
+<section class="panel"><h2>候选池 TOP20</h2><div style="max-height:520px;overflow:auto"><table><thead><tr><th>股票</th><th>分</th><th>买入区</th><th>5日胜率</th><th>涨跌</th><th>状态</th></tr></thead><tbody id="tbody"></tbody></table></div></section>
+<section class="panel"><h2>交易记录（只存在当前浏览器）</h2><div class="journal"><input id="jcode" placeholder="代码"><input id="jbuy" placeholder="买入价"><input id="jnote" placeholder="备注"><button onclick="addJournal()">记录</button></div><div id="journalList" style="margin-top:10px"></div>
+<details><summary>口径说明</summary><div class="mut">“买入区”是把后台技术触发条件转换成可执行价格区间；超过“不追价”价格后不建议追。历史胜率样本少于6次会标记样本不足。资金流接口不可用时显示“未接入”，不会伪造为0。</div></details></section></div>
+</div>
+<script>
+const money=x=>x===null||x===undefined?'未接入':`${x>=0?'+':''}${x}亿`;
+const winText=bt=>!bt||bt.win_rate_5d===null?'样本不足':`${bt.win_rate_5d}%`;
+const confText=bt=>bt?`${bt.sample_size||0}次｜${bt.confidence||'—'}`:'0次';
+function stockCard(x,compact=false,rank=null){
+ const sc=x.score>=80?'good':(x.score>=70?'warn':'bad'); const tc=x.status==='进入买点区'?'tag':'tag wait'; const f=x.fund_flow||{}; const bp=x.buy_plan||{}; const bt=x.backtest||{};
+ let chips=(x.reasons||[]).map(s=>`<span class="chip">${s}</span>`).join('')+(x.warnings||[]).map(s=>`<span class="chip w">${s}</span>`).join('');
+ return `<div class="stock"><div class="stockrow">
+ <div><div class="name">${rank?`<span class="rank">${rank}</span>`:''}${x.name}</div><div class="mut">${x.code} ｜ 现价 ${x.price} ｜ <span class="${x.pct>=0?'good':'bad'}">${x.pct>=0?'+':''}${x.pct}%</span></div></div>
+ <div><div class="score ${sc}">${x.score}</div><div class="mut">综合分</div></div>
+ <div class="buybox"><div class="tiny">计划买入区</div><div class="buyprice">${bp.buy_low??'—'} ～ ${bp.buy_high??'—'}</div><div class="tiny">理想价 ${bp.ideal_buy??'—'} ｜ 不追价 ＞ ${bp.no_chase??'—'}<br>止损 ${x.stop} ｜ 目标 ${x.target1} / ${x.target2}</div></div>
+ <div><span class="${tc}">${bp.state||x.status}</span><div class="kv" style="margin-top:5px"><span class="win ${bt.win_rate_5d>=55?'good':(bt.win_rate_5d===null?'warn':'')}">${winText(bt)}</span> <span class="tiny">5日胜率</span><br><span class="tiny">${confText(bt)}｜5日均收益 ${bt.avg_5d_return??'—'}%</span><br>资金 <b>${f.available?money(f.main_yi):'未接入'}</b></div></div>
+ </div>${compact?'':`<div class="chips">${chips||'<span class="mut">暂无额外信号</span>'}</div><details><summary>查看后台技术触发条件</summary><div class="kv">技术触发价 <b>${x.trigger}</b> ｜ 量比 <b>${x.volume_ratio}</b> ｜ 盈亏比 <b>${x.rr1}</b><br>历史1日胜率 ${bt.win_rate_1d??'—'}% ｜ 3日 ${bt.win_rate_3d??'—'}% ｜ 5日 ${bt.win_rate_5d??'—'}%</div></details>`}</div>`;
+}
+async function loadData(){
+ try{
+  const r=await fetch('./data/latest.json?t='+Date.now(),{cache:'no-store'}); if(!r.ok) throw Error('数据文件未生成'); const d=await r.json();
+  status.innerHTML=`V${d.version||'—'}　最新扫描 <b>${d.updated_at}</b>　｜　股票池 ${d.market.universe} 只`;
+  mScore.textContent=d.market.score+'/100';mState.textContent=d.market.state||'—';mUp.textContent=d.market.up_ratio+'%';mMed.textContent=(d.market.median_pct>=0?'+':'')+d.market.median_pct+'%';
+  const h=d.source_health||{}; health.innerHTML=Object.values(h).map(x=>`<span><i class="dot ${x.ok?'':'off'}"></i>${x.role}</span>`).join('');
+  opps.innerHTML=(d.opportunities||[]).length?d.opportunities.map((x,i)=>stockCard(x,false,i+1)).join(''):'<div class="empty">没有达到阈值的机会。今天可以不做。</div>';
+  watch.innerHTML=(d.watchlist||[]).map(x=>stockCard(x,true)).join('')||'<div class="empty">暂无自选数据</div>';
+  tbody.innerHTML=(d.candidates||[]).map(x=>{const bp=x.buy_plan||{},bt=x.backtest||{};return `<tr><td><b>${x.name}</b><br><span class="mut">${x.code}</span></td><td>${x.score}</td><td>${bp.buy_low??'—'}～${bp.buy_high??'—'}</td><td>${winText(bt)}<br><span class="tiny">${bt.sample_size||0}次</span></td><td class="${x.pct>=0?'good':'bad'}">${x.pct>=0?'+':''}${x.pct}%</td><td>${bp.state||x.status}</td></tr>`}).join('');
+ }catch(e){status.textContent='⚠️ '+e.message;opps.innerHTML='<div class="empty">等待后台扫描数据</div>'}
+}
+function loadJournal(){let a=JSON.parse(localStorage.getItem('tradeJournal')||'[]');journalList.innerHTML=a.length?a.map((x,i)=>`<div class="stock"><b>${x.code}</b>　买入 ${x.buy}　<span class="mut">${x.note||''}　${x.time}</span> <button style="float:right;padding:3px 7px;background:#343941" onclick="delJournal(${i})">删</button></div>`).join(''):'<div class="empty">暂无记录</div>'}
+function addJournal(){let a=JSON.parse(localStorage.getItem('tradeJournal')||'[]');a.unshift({code:jcode.value,buy:jbuy.value,note:jnote.value,time:new Date().toLocaleString()});localStorage.setItem('tradeJournal',JSON.stringify(a));jcode.value=jbuy.value=jnote.value='';loadJournal()}
+function delJournal(i){let a=JSON.parse(localStorage.getItem('tradeJournal')||'[]');a.splice(i,1);localStorage.setItem('tradeJournal',JSON.stringify(a));loadJournal()}
+loadData();loadJournal();
+</script></body></html>
