@@ -1,6 +1,6 @@
 <!doctype html><html lang="zh-CN"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>短线机会工作台 V1.7</title>
+<title>短线机会工作台 V2.0</title>
 <style>
 :root{--bg:#0b0d10;--card:#14171c;--card2:#1a1e24;--line:#292f38;--txt:#f2f4f7;--mut:#9098a4;--g:#49d17d;--y:#efb64a;--r:#ef6965;--b:#79a1ff}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font:14px/1.55 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
@@ -23,22 +23,25 @@ button.secondary{background:#343941}button.danger{background:#6b3030}button.mini
 table{width:100%;border-collapse:collapse;font-size:12px}td,th{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line)}th{color:var(--mut);font-weight:500}
 .health{display:flex;gap:7px;flex-wrap:wrap}.health span{font-size:11px;padding:4px 7px;border-radius:999px;background:#20252c}.dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;background:var(--g)}.dot.off{background:var(--r)}
 .empty{background:var(--card2);padding:22px;border-radius:9px;text-align:center;color:var(--mut)}details{margin-top:10px}summary{cursor:pointer;color:var(--mut);font-size:12px}
-input{background:#111419;color:white;border:1px solid var(--line);border-radius:7px;padding:8px;width:100%;outline:none}.journal{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:7px}
+input{background:#111419;color:white;border:1px solid var(--line);border-radius:7px;padding:8px;width:100%;outline:none}
 .rank{display:inline-flex;width:22px;height:22px;border-radius:50%;align-items:center;justify-content:center;background:#252b34;color:#fff;font-weight:800;font-size:11px;margin-right:7px}
 .watch-tools{display:grid;grid-template-columns:1fr auto;gap:7px;position:relative;margin-bottom:10px}.searchbox{position:absolute;z-index:8;left:0;right:62px;top:40px;background:#15191f;border:1px solid var(--line);border-radius:9px;max-height:250px;overflow:auto;box-shadow:0 12px 30px #0008;display:none}
 .search-item{padding:8px 10px;border-bottom:1px solid var(--line);cursor:pointer}.search-item:hover{background:#20252d}
 .watch-item{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;background:var(--card2);border:1px solid var(--line);border-radius:9px;padding:10px;margin-bottom:7px}
 .live{font-size:11px;color:var(--b)}.speed{display:inline-block;padding:3px 7px;border-radius:999px;background:#1c2a3e;color:#9fbdff;font-size:11px}
 .actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.journal-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;background:var(--card2);border:1px solid var(--line);border-radius:9px;padding:10px;margin-bottom:7px}
-@media(max-width:960px){.grid,.grid2{grid-template-columns:1fr}.metrics{grid-template-columns:1fr 1fr}.stockrow{grid-template-columns:1fr 1fr}.top,.banner{align-items:flex-start;flex-direction:column}.journal{grid-template-columns:1fr 1fr}.watch-tools{grid-template-columns:1fr auto}}
+.elastic{display:inline-block;padding:3px 7px;border-radius:999px;font-size:11px;font-weight:750}.elastic.high{background:#173c2a;color:#65e39a}.elastic.mid{background:#3a321d;color:#f0c36b}.elastic.low{background:#352323;color:#e69a96}
+.sector-list{display:grid;gap:7px}.sector-row{display:grid;grid-template-columns:1fr .65fr .55fr;gap:8px;align-items:center;background:var(--card2);border:1px solid var(--line);border-radius:8px;padding:9px 10px}.sector-name{font-weight:750}.sector-money{font-weight:800;text-align:right}.sector-pct{text-align:right}.explainbox{background:#111820;border:1px solid #273649;border-radius:9px;padding:10px;margin-bottom:10px}
+@media(max-width:960px){.grid,.grid2{grid-template-columns:1fr}.metrics{grid-template-columns:1fr 1fr}.stockrow{grid-template-columns:1fr 1fr}.top,.banner{align-items:flex-start;flex-direction:column}.watch-tools{grid-template-columns:1fr auto}}
 </style></head><body><div class="wrap">
 <div class="top">
- <div><h1>🎯 短线机会工作台 V1.7</h1><div class="sub">模型约5分钟｜行情约15秒｜最多5只机会｜优先抓启动初期，过滤已涨多</div></div>
+ <div><h1>🎯 短线机会工作台 V2.0</h1><div class="sub">短波段模式｜高弹性优先｜1～2天能拉开幅度的票优先｜行情约15秒</div></div>
  <div class="actions"><span class="speed" id="liveClock">行情刷新：—</span><button onclick="loadData(true)">刷新模型结果</button></div>
 </div>
 <div class="panel banner"><div id="status">读取最新扫描结果…</div><div id="health" class="health"></div></div>
 <div class="panel" style="margin-bottom:12px;padding:10px 14px">
-  <span class="tiny">🚫 已涨过滤：近5日 &gt; 8% ｜ 近10日 &gt; 13% ｜ 连涨 ≥ 3天 ｜ 距5日线 &gt; 4.5% → 不进入买点机会池</span>
+  <div class="tiny">⚡ <b>短波段逻辑：</b>高弹性优先，但高弹性 ≠ 一定上涨。必须同时满足“没涨多 + 早期位置 + 待涨不弱”。</div>
+  <div class="tiny" style="margin-top:4px">高弹性：历史ATR/振幅大，1～2天更容易拉开幅度；中弹性：适合2～5日；低弹性：短线效率偏低。🚫 近5日&gt;8%、连涨≥3天等仍过滤。</div>
 </div>
 
 <div class="grid">
@@ -54,6 +57,7 @@ input{background:#111419;color:white;border:1px solid var(--line);border-radius:
   <div class="metric"><div id="mUp" class="big">—</div><div class="mut">上涨占比</div></div>
   <div class="metric"><div id="mMed" class="big">—</div><div class="mut">涨跌中位</div></div>
  </div>
+ <div class="explainbox tiny" id="marketGuide" style="margin-top:10px">短线建议：—</div>
  <h2 style="margin-top:15px">自选监控</h2>
  <div class="watch-tools">
   <input id="watchSearch" placeholder="输入股票代码或名称，如 600105 / 永鼎" autocomplete="off">
@@ -65,17 +69,24 @@ input{background:#111419;color:white;border:1px solid var(--line);border-radius:
 </div>
 
 <div class="grid2">
-<section class="panel"><h2>候选池 TOP20</h2><div style="max-height:520px;overflow:auto"><table><thead><tr><th>股票</th><th>早期分</th><th>阶段</th><th>近5日</th><th>连涨</th><th>待涨</th><th>5日上涨率</th><th>买入区</th><th>状态</th></tr></thead><tbody id="tbody"></tbody></table></div></section>
+<section class="panel"><h2>候选池 TOP20</h2><div style="max-height:520px;overflow:auto"><table><thead><tr><th>股票</th><th>弹性</th><th>ATR14</th><th>阶段</th><th>近5日</th><th>待涨</th><th>5日上涨率</th><th>买入区</th><th>状态</th></tr></thead><tbody id="tbody"></tbody></table></div></section>
 <section class="panel">
- <div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><h2>交易记录（只存在当前浏览器）</h2><button class="danger mini" onclick="clearJournal()">清空全部</button></div>
- <div class="journal"><input id="jcode" placeholder="代码"><input id="jbuy" placeholder="买入价"><input id="jnote" placeholder="备注"><button onclick="addJournal()">记录</button></div>
- <div id="journalList" style="margin-top:10px"></div>
- <details><summary>口径说明</summary><div class="mut">V1.7 先判断是否属于“启动初期”，已涨过多会直接剔除；“待涨指数”只在早期形态通过后作为第二层判断，不是承诺概率；“5日上涨估计”来自历史相似样本上涨率并对小样本向50%收缩；目标胜率仍是先到+3.5%目标、而不是先到-2.5%止损的历史比例。网页端新增自选存于本机浏览器；未进入后台候选池的自选股，会先显示快速行情，评分/买点需等模型扫描覆盖或使用后续的按股即时分析模块。</div></details>
+ <div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><h2>💰 板块资金流向</h2><span id="sectorTime" class="tiny">—</span></div>
+ <div class="explainbox tiny">优先看“资金净流入靠前 + 板块本身上涨 + 个股高弹性”的共振。板块资金来自公开资金流口径，不代表真实机构身份；数据源失败时会保留最近一次可用结果并标记“旧数据”。</div>
+ <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+  <div><div class="tiny" style="margin-bottom:6px">🔥 净流入靠前</div><div id="sectorIn" class="sector-list"><div class="empty">等待板块资金数据</div></div></div>
+  <div><div class="tiny" style="margin-bottom:6px">🧊 净流出靠前</div><div id="sectorOut" class="sector-list"><div class="empty">等待板块资金数据</div></div></div>
+ </div>
 </section>
+</div>
+
+<div class="grid2">
+<section class="panel"><h2>⚠️ 今日不追 / 风险池</h2><div class="explainbox tiny">这里不是永久看空，而是提示：当前价格、弹性或追高风险不适合作为新的短线买点。</div><div id="avoidList" class="cards"><div class="empty">等待风险池数据</div></div></section>
+<section class="panel"><h2>🧭 使用逻辑</h2><div class="explainbox tiny">短线优先级：板块资金流入 → 个股高弹性 → 启动初期/回踩确认 → 买入区内 → 止损明确。弹性大代表涨跌都快，所以必须配合“不追价线”和止损。</div><div class="metrics"><div class="metric"><div class="big">1-3天</div><div class="mut">高弹性优先周期</div></div><div class="metric"><div class="big">3-5天</div><div class="mut">中弹性波段周期</div></div><div class="metric"><div class="big">不追</div><div class="mut">涨多/离均线远</div></div><div class="metric"><div class="big">TOP5</div><div class="mut">宁缺毋滥</div></div></div></section>
 </div></div>
 
 <script>
-let DATA=null, SYMBOLS=[], LIVE={};
+let DATA=null, SYMBOLS=[], LIVE={}, SECTOR_TRIED_AT=0;
 const $=id=>document.getElementById(id);
 const money=x=>x===null||x===undefined?'未接入':`${x>=0?'+':''}${x}亿`;
 const winText=bt=>!bt||bt.win_rate_5d===null?'样本不足':`${bt.win_rate_5d}%`;
@@ -94,15 +105,15 @@ function dynamicBuyState(x){
  return '超过追价线，不追';
 }
 function stockCard(raw,rank=null){
- const x=currentQuote(raw), bp=x.buy_plan||{}, bt=x.backtest||{}, f=x.fund_flow||{}, rs=x.rise_signal||{}, es=x.early_signal||{};
+ const x=currentQuote(raw), bp=x.buy_plan||{}, bt=x.backtest||{}, f=x.fund_flow||{}, rs=x.rise_signal||{}, es=x.early_signal||{}, el=x.elasticity||{};
  const sc=x.score>=80?'good':(x.score>=70?'warn':'bad');
  const state=dynamicBuyState(x); const tc=state==='进入买点区'?'tag':'tag wait';
  const riseTone='rise-'+(rs.tone||'neutral');
  let chips=(x.reasons||[]).map(s=>`<span class="chip">${s}</span>`).join('')+(x.warnings||[]).map(s=>`<span class="chip w">${s}</span>`).join('');
  return `<div class="stock"><div class="stockrow">
  <div><div class="name">${rank?`<span class="rank">${rank}</span>`:''}${x.name}</div><div class="mut">${x.code} ｜ 现价 <b data-price="${x.code}">${x.price}</b> ｜ <span data-pct="${x.code}" class="${x.pct>=0?'good':'bad'}">${x.pct>=0?'+':''}${x.pct}%</span></div></div>
- <div><div class="score ${sc}">${es.early_score??x.score}</div><div class="mut">早期机会分</div><div class="tiny">${es.stage||"—"}</div></div>
- <div class="buybox"><div class="tiny">计划买入区｜${bp.type||"—"}</div><div class="buyprice">${bp.buy_low??'—'} ～ ${bp.buy_high??'—'}</div><div class="tiny">理想价 ${bp.ideal_buy??'—'} ｜ 不追 ＞ ${bp.no_chase??'—'}<br>近5日 ${es.ret5??'—'}% ｜ 连涨 ${es.up_streak??'—'}天 ｜ 距MA5 ${es.dist_ma5??'—'}%<br>止损 ${x.stop} ｜ 目标 ${x.target1} / ${x.target2}</div></div>
+ <div><div class="score ${sc}">${el.score??"—"}</div><div class="mut">弹性分</div><div class="tiny"><span class="elastic ${el.level==="高弹性"?"high":(el.level==="中弹性"?"mid":"low")}">${el.level||"—"}</span></div></div>
+ <div class="buybox"><div class="tiny">计划买入区｜${bp.type||"—"}</div><div class="buyprice">${bp.buy_low??'—'} ～ ${bp.buy_high??'—'}</div><div class="tiny">理想价 ${bp.ideal_buy??'—'} ｜ 不追 ＞ ${bp.no_chase??'—'}<br>ATR14 ${el.atr14_pct??'—'}% ｜ 10日均振幅 ${el.avg_amp10??'—'}%<br>近5日 ${es.ret5??'—'}% ｜ 连涨 ${es.up_streak??'—'}天 ｜ 距MA5 ${es.dist_ma5??'—'}%<br>止损 ${x.stop} ｜ 目标 ${x.target1} / ${x.target2}</div></div>
  <div class="risebox">
    <div class="risehead"><span class="riselevel ${riseTone}">${rs.level||'待涨待评估'}</span><span class="riseidx ${riseTone}">${rs.index??'—'}</span></div>
    <div class="tiny">待涨指数 /100</div>
@@ -111,7 +122,7 @@ function stockCard(raw,rank=null){
  <div><span class="${tc}">${state}</span><div class="kv" style="margin-top:5px">${rs.confidence||bt.confidence||'样本不足'}｜${rs.sample_size??bt.sample_size??0}次<br><span class="tiny">${rs.conclusion||''}</span><br>资金 <b>${f.available?money(f.main_yi):'未接入'}</b></div></div>
  </div><div class="chips">${chips||'<span class="mut">暂无额外信号</span>'}</div>
  <details><summary>查看统计与后台条件</summary><div class="kv">
- 阶段 <b>${es.stage||"—"}</b> ｜ 追高风险 <b>${es.chase_risk||"—"}</b> ｜ 早期分 <b>${es.early_score??"—"}</b><br>近3/5/10日 <b>${es.ret3??"—"}% / ${es.ret5??"—"}% / ${es.ret10??"—"}%</b> ｜ 连涨 <b>${es.up_streak??"—"}天</b> ｜ 距MA5 <b>${es.dist_ma5??"—"}%</b><br>技术触发价 <b>${x.trigger}</b> ｜ 量比 <b>${x.volume_ratio}</b> ｜ 盈亏比 <b>${x.rr1}</b><br>
+ 弹性 <b>${el.level||"—"} ${el.score??"—"}</b> ｜ ATR14 <b>${el.atr14_pct??"—"}%</b> ｜ 10日均振幅 <b>${el.avg_amp10??"—"}%</b> ｜ ${el.swing_fit||"—"}<br>阶段 <b>${es.stage||"—"}</b> ｜ 追高风险 <b>${es.chase_risk||"—"}</b> ｜ 早期分 <b>${es.early_score??"—"}</b><br>近3/5/10日 <b>${es.ret3??"—"}% / ${es.ret5??"—"}% / ${es.ret10??"—"}%</b> ｜ 连涨 <b>${es.up_streak??"—"}天</b> ｜ 距MA5 <b>${es.dist_ma5??"—"}%</b><br>技术触发价 <b>${x.trigger}</b> ｜ 量比 <b>${x.volume_ratio}</b> ｜ 盈亏比 <b>${x.rr1}</b><br>
  回测匹配：${bt.match_type||"—"}｜样本 ${bt.sample_size??0}次<br>历史上涨率：1日 ${bt.up_rate_1d??'—'}% ｜ 3日 ${bt.up_rate_3d??'—'}% ｜ 5日 ${bt.up_rate_5d??'—'}%<br>
  目标胜率：1日 ${bt.win_rate_1d??'—'}% ｜ 3日 ${bt.win_rate_3d??'—'}% ｜ 5日 ${bt.win_rate_5d??'—'}%<br>
  平均收益：1日 ${bt.avg_1d_return??'—'}% ｜ 3日 ${bt.avg_3d_return??'—'}% ｜ 5日 ${bt.avg_5d_return??'—'}%<br>
@@ -148,27 +159,84 @@ function addFirstSearch(){
 function renderWatch(){
  const codes=getWatchCodes(), amap=analysisMap(), snap=DATA?.quote_snapshot||{};
  $('watch').innerHTML=codes.length?codes.map(code=>{
-   let x=amap[code], q=LIVE[code]||snap[code], s=SYMBOLS.find(z=>z.code===code);
+   let x=amap[code], q={...(snap[code]||{}),...(LIVE[code]||{})}, s=SYMBOLS.find(z=>z.code===code);
    if(x){
      x=currentQuote(x);
-     const rs=x.rise_signal||{};
-     return `<div class="watch-item"><div><b>${x.name}</b> <span class="mut">${code}</span><br><span class="${x.pct>=0?'good':'bad'}">${x.price}　${x.pct>=0?'+':''}${x.pct}%</span>　<span class="tiny">阶段 ${(x.early_signal||{}).stage||'—'}｜近5日 ${(x.early_signal||{}).ret5??'—'}%｜<b class="rise-${rs.tone||'neutral'}">${rs.level||'待评估'} ${rs.index??'—'}</b>｜5日上涨估计 ${rs.estimated_up_5d??'—'}%｜买入区 ${(x.buy_plan||{}).buy_low??'—'}～${(x.buy_plan||{}).buy_high??'—'}｜${dynamicBuyState(x)}</span></div><button class="danger mini" onclick="removeWatch('${code}')">删除</button></div>`;
+     const rs=x.rise_signal||{}, es=x.early_signal||{}, el=x.elasticity||{}, bp=x.buy_plan||{};
+     return `<div class="watch-item"><div>
+       <div><b>${x.name}</b> <span class="mut">${code}</span>　<span class="elastic ${el.level==='高弹性'?'high':(el.level==='中弹性'?'mid':'low')}">${el.level||'—'} ${el.score??'—'}</span></div>
+       <div style="margin-top:3px"><span class="${x.pct>=0?'good':'bad'}"><b>${x.price}</b>　${x.pct>=0?'+':''}${x.pct}%</span>　<span class="tiny">成交额 ${x.amount_yi??'—'}亿｜ATR14 ${el.atr14_pct??'—'}%｜均振幅 ${el.avg_amp10??'—'}%</span></div>
+       <div class="tiny" style="margin-top:3px">阶段 ${es.stage||'—'}｜近5日 ${es.ret5??'—'}%｜待涨 <b class="rise-${rs.tone||'neutral'}">${rs.level||'—'} ${rs.index??'—'}</b>｜5日上涨估计 ${rs.estimated_up_5d??'—'}%</div>
+       <div class="tiny">买入区 <b>${bp.buy_low??'—'}～${bp.buy_high??'—'}</b>｜理想 ${bp.ideal_buy??'—'}｜${dynamicBuyState(x)}｜目标 ${x.target1??'—'} / ${x.target2??'—'}</div>
+     </div><button class="danger mini" onclick="removeWatch('${code}')">删除</button></div>`;
    }
    if(q){
-     return `<div class="watch-item"><div><b>${q.name||s?.name||code}</b> <span class="mut">${code}</span><br><span class="${q.pct>=0?'good':'bad'}">${q.price}　${q.pct>=0?'+':''}${q.pct}%</span>　<span class="tiny">快速行情｜尚未进入后台深度分析池</span></div><button class="danger mini" onclick="removeWatch('${code}')">删除</button></div>`;
+     return `<div class="watch-item"><div>
+       <div><b>${q.name||s?.name||code}</b> <span class="mut">${code}</span>　<span class="elastic ${String(q.quick_elasticity_level||'').includes('高')?'high':(String(q.quick_elasticity_level||'').includes('中')?'mid':'low')}">${q.quick_elasticity_level||'日内弹性—'} ${q.quick_elasticity_score??'—'}</span></div>
+       <div style="margin-top:3px"><span class="${q.pct>=0?'good':'bad'}"><b>${q.price}</b>　${q.pct>=0?'+':''}${q.pct}%</span>　<span class="tiny">成交额 ${q.amount_yi??'—'}亿｜日内振幅 ${q.amplitude_pct??'—'}%</span></div>
+       <div class="tiny">开 ${q.open??'—'}｜高 ${q.high??'—'}｜低 ${q.low??'—'}｜数据 ${q.quote_source||'快速行情'}</div>
+       <div class="tiny">未进入深度候选池：先看快速行情/日内弹性；若要完整买点，等待下一轮后台扫描或保持在自选观察。</div>
+     </div><button class="danger mini" onclick="removeWatch('${code}')">删除</button></div>`;
    }
    return `<div class="watch-item"><div><b>${s?.name||code}</b> <span class="mut">${code}</span><br><span class="tiny">等待行情</span></div><button class="danger mini" onclick="removeWatch('${code}')">删除</button></div>`;
  }).join(''):'<div class="empty">暂无自选。上方搜索股票后添加。</div>';
 }
+function renderSectorFlow(sf){
+ $('sectorTime').textContent=sf.updated_at?`${sf.stale?'旧数据｜':''}${sf.updated_at}`:'板块资金源暂不可用';
+ const secRow=(x,positive)=>`<div class="sector-row"><div><span class="sector-name">${x.name}</span><br><span class="tiny">${x.pct>=0?'+':''}${x.pct}%</span></div><div class="sector-money ${positive?'good':'bad'}">${x.main_yi>=0?'+':''}${x.main_yi}亿</div><div class="sector-pct tiny">${x.main_pct>=0?'+':''}${x.main_pct}%</div></div>`;
+ $('sectorIn').innerHTML=(sf.inflow||[]).length?(sf.inflow||[]).slice(0,8).map(x=>secRow(x,true)).join(''):'<div class="empty">暂无可用板块资金数据</div>';
+ $('sectorOut').innerHTML=(sf.outflow||[]).length?(sf.outflow||[]).slice(0,8).map(x=>secRow(x,false)).join(''):'<div class="empty">暂无可用板块资金数据</div>';
+}
+function sectorJsonpFallback(){
+ const now=Date.now();
+ if(now-SECTOR_TRIED_AT<120000)return;
+ SECTOR_TRIED_AT=now;
+ const cb='sector_cb_'+now;
+ const script=document.createElement('script');
+ let timer=null;
+ window[cb]=(j)=>{
+   try{
+     const diff=(j&&j.data&&j.data.diff)||[];
+     const rows=diff.map(x=>({code:String(x.f12||''),name:String(x.f14||''),pct:Number(x.f3||0),amount_yi:Number((Number(x.f6||0)/1e8).toFixed(2)),main_yi:Number((Number(x.f62||0)/1e8).toFixed(2)),main_pct:Number(x.f184||0)})).filter(x=>x.name);
+     if(rows.length>=20){
+       renderSectorFlow({available:true,stale:false,updated_at:'浏览器实时 '+new Date().toLocaleTimeString(),inflow:[...rows].sort((a,b)=>b.main_yi-a.main_yi).slice(0,10),outflow:[...rows].sort((a,b)=>a.main_yi-b.main_yi).slice(0,8)});
+     }
+   }finally{
+     if(timer)clearTimeout(timer);
+     try{delete window[cb]}catch(e){}
+     script.remove();
+   }
+ };
+ const params=new URLSearchParams({pn:'1',pz:'200',po:'1',np:'1',ut:'bd1d9ddb04089700cf9c27f6f7426281',fltt:'2',invt:'2',fid:'f62',fs:'m:90 t:2 f:!50',fields:'f12,f14,f2,f3,f6,f62,f184',cb});
+ script.src='https://82.push2.eastmoney.com/api/qt/clist/get?'+params.toString();
+ script.onerror=()=>{try{delete window[cb]}catch(e){};script.remove()};
+ document.body.appendChild(script);
+ timer=setTimeout(()=>{try{delete window[cb]}catch(e){};script.remove()},9000);
+}
+
+function renderAvoidList(list){
+ const arr=list||[];
+ $('avoidList').innerHTML=arr.length?arr.map(x=>{
+   const es=x.early_signal||{}, el=x.elasticity||{}, f=x.fund_flow||{};
+   const flow=f&&f.available?`${f.main_yi>=0?'+':''}${f.main_yi}亿`:'未接入';
+   return `<div class="watch-item"><div><b>${x.name}</b> <span class="mut">${x.code}</span>　<span class="bad">${x.reason}</span><br><span class="${x.pct>=0?'good':'bad'}">${x.price}　${x.pct>=0?'+':''}${x.pct}%</span>　<span class="tiny">弹性 ${el.level||'—'} ${el.score??'—'}｜近5日 ${es.ret5??'—'}%｜连涨 ${es.up_streak??'—'}天｜资金 ${flow}</span><br><span class="tiny">${x.suggestion||''}</span></div></div>`;
+ }).join(''):'<div class="empty">暂无明显不追标的</div>';
+}
+
 function renderMain(){
  if(!DATA)return;
  const d=DATA;
  $('status').innerHTML=`V${d.version||'—'}　模型扫描 <b>${d.updated_at}</b>　｜　股票池 ${d.market.universe} 只`;
- $('mScore').textContent=d.market.score+'/100'; $('mState').textContent=d.market.state||'—'; $('mUp').textContent=d.market.up_ratio+'%'; $('mMed').textContent=(d.market.median_pct>=0?'+':'')+d.market.median_pct+'%';
+ $('mScore').textContent=d.market.score+'/100'; $('mState').textContent=d.market.state||'—'; $('mUp').textContent=d.market.up_ratio+'%'; $('mMed').textContent=(d.market.median_pct>=0?'+':'')+d.market.median_pct+'%'; $('marketGuide').textContent='短线建议：'+(d.market.guidance||'—');
  const h=d.source_health||{}; $('health').innerHTML=Object.values(h).map(x=>`<span><i class="dot ${x.ok?'':'off'}"></i>${x.role}</span>`).join('');
  $('opps').innerHTML=(d.opportunities||[]).length?d.opportunities.map((x,i)=>stockCard(x,i+1)).join(''):'<div class="empty">没有达到阈值的机会。今天可以不做。</div>';
- $('tbody').innerHTML=(d.candidates||[]).map(raw=>{const x=currentQuote(raw),bp=x.buy_plan||{},bt=x.backtest||{},rs=x.rise_signal||{},es=x.early_signal||{};return `<tr><td><b>${x.name}</b><br><span class="mut">${x.code}</span></td><td>${es.early_score??x.score}</td><td>${es.stage||'—'}<br><span class="tiny">追高${es.chase_risk||'—'}</span></td><td class="${(es.ret5??0)>6?'bad':'good'}">${es.ret5??'—'}%</td><td>${es.up_streak??'—'}天</td><td><b class="rise-${rs.tone||'neutral'}">${rs.level||'—'} ${rs.index??'—'}</b></td><td>${rs.estimated_up_5d??bt.up_rate_5d??'—'}%<br><span class="tiny">${bt.sample_size||0}次</span></td><td>${bp.buy_low??'—'}～${bp.buy_high??'—'}</td><td>${x.status}</td></tr>`}).join('');
+ $('tbody').innerHTML=(d.candidates||[]).map(raw=>{const x=currentQuote(raw),bp=x.buy_plan||{},bt=x.backtest||{},rs=x.rise_signal||{},es=x.early_signal||{},el=x.elasticity||{};return `<tr><td><b>${x.name}</b><br><span class="mut">${x.code}</span></td><td><span class="elastic ${el.level==='高弹性'?'high':(el.level==='中弹性'?'mid':'low')}">${el.level||'—'} ${el.score??'—'}</span></td><td>${el.atr14_pct??'—'}%<br><span class="tiny">振幅 ${el.avg_amp10??'—'}%</span></td><td>${es.stage||'—'}<br><span class="tiny">早期分 ${es.early_score??'—'}</span></td><td class="${(es.ret5??0)>6?'bad':'good'}">${es.ret5??'—'}%</td><td><b class="rise-${rs.tone||'neutral'}">${rs.level||'—'} ${rs.index??'—'}</b></td><td>${rs.estimated_up_5d??bt.up_rate_5d??'—'}%<br><span class="tiny">${bt.sample_size||0}次</span></td><td>${bp.buy_low??'—'}～${bp.buy_high??'—'}</td><td>${x.status}</td></tr>`}).join('');
+
+ const sf=d.sector_flow||{};
+ renderSectorFlow(sf);
+ if(!(sf.inflow||[]).length) sectorJsonpFallback();
  renderWatch();
+ renderAvoidList(d.avoid_list||[]);
 }
 async function loadData(manual=false){
  try{
@@ -192,7 +260,7 @@ function tencentScript(codes){
      vars.forEach(v=>{
        const raw=window['v_'+v]; if(!raw)return; const a=raw.split('~'); if(a.length<38)return;
        const code=v.slice(2), price=Number(a[3]), prev=Number(a[4]), pct=prev?((price-prev)/prev*100):0, amount=Number(a[37]||0);
-       LIVE[code]={code,name:a[1],price:Number(price.toFixed(2)),pct:Number(pct.toFixed(2)),amount_yi:Number(amount.toFixed(2))};
+       LIVE[code]={code,name:a[1],price:Number(price.toFixed(2)),pct:Number(pct.toFixed(2))};
        try{delete window['v_'+v]}catch(e){}
      });
    }finally{script.remove();resolve()}};
@@ -211,20 +279,7 @@ $('watchSearch').addEventListener('input',searchSymbols);
 $('watchSearch').addEventListener('keydown',e=>{if(e.key==='Enter')addFirstSearch()});
 document.addEventListener('click',e=>{if(!e.target.closest('.watch-tools'))$('searchBox').style.display='none'});
 
-function loadJournal(){
- const a=JSON.parse(localStorage.getItem('tradeJournal')||'[]');
- $('journalList').innerHTML=a.length?a.map((x,i)=>`<div class="journal-row"><div><b>${x.code}</b>　买入 ${x.buy}<br><span class="mut">${x.note||''}　${x.time}</span></div><button class="danger mini" onclick="delJournal(${i})">删除</button></div>`).join(''):'<div class="empty">暂无记录</div>';
-}
-function addJournal(){
- if(!$('jcode').value.trim()||!$('jbuy').value.trim())return;
- let a=JSON.parse(localStorage.getItem('tradeJournal')||'[]');
- a.unshift({code:$('jcode').value.trim(),buy:$('jbuy').value.trim(),note:$('jnote').value.trim(),time:new Date().toLocaleString()});
- localStorage.setItem('tradeJournal',JSON.stringify(a)); $('jcode').value=$('jbuy').value=$('jnote').value=''; loadJournal();
-}
-function delJournal(i){let a=JSON.parse(localStorage.getItem('tradeJournal')||'[]');a.splice(i,1);localStorage.setItem('tradeJournal',JSON.stringify(a));loadJournal()}
-function clearJournal(){if(confirm('确定清空全部交易记录？此操作只影响当前浏览器，且不可恢复。')){localStorage.removeItem('tradeJournal');loadJournal()}}
-
-loadData(); loadJournal();
+loadData();
 setInterval(refreshLiveQuotes,15000);
 setInterval(()=>loadData(false),60000);
 </script></body></html>

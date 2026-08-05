@@ -220,6 +220,8 @@ def early_stage_features(h):
         vr>=0.9
     )
 
+    compression = (range10<=8.5 and ret10<=4.5 and abs(dist_ma5)<=2.5 and position20<=0.68 and 0.72<=vr<=1.55 and up_streak<=1)
+
     if platform_break:
         stage="平台首破"
         pattern_score=28
@@ -232,6 +234,9 @@ def early_stage_features(h):
     elif cross_ma5 and ret5<=5.5:
         stage="首次站回均线"
         pattern_score=20
+    elif compression:
+        stage="潜伏蓄势"
+        pattern_score=18
     else:
         stage="无明确早期形态"
         pattern_score=5
@@ -329,6 +334,38 @@ def early_stage_features(h):
         "breakout_level":round(prior5_high,2),
         "reasons":reasons[:5],"warnings":warnings[:5]
     }
+
+def elasticity_features(h):
+    """价格弹性：只描述波动能力，不代表方向。"""
+    if len(h)<20:
+        return {"score":0,"level":"数据不足","tone":"bad","atr14_pct":None,"avg_amp10":None,"avg_abs_pct10":None,"swing_fit":"数据不足","explain":"历史数据不足"}
+    trs=[]; amps=[]; abs_pcts=[]
+    for i in range(1,len(h)):
+        prev=h[i-1]["c"]
+        if prev<=0: continue
+        hi=h[i]["h"]; lo=h[i]["l"]
+        trs.append(max(hi-lo,abs(hi-prev),abs(lo-prev))/prev*100)
+        amps.append((hi-lo)/prev*100)
+        abs_pcts.append(abs(h[i].get("pct",0)))
+    atr14=mean(trs[-14:]); amp10=mean(amps[-10:]); abs10=mean(abs_pcts[-10:])
+    atr_s=clamp((atr14-1.2)*22); amp_s=clamp((amp10-1.8)*18); abs_s=clamp((abs10-0.7)*26)
+    score=round(clamp(atr_s*.52+amp_s*.31+abs_s*.17),1)
+    if score>=68 or (atr14>=3.8 and amp10>=4.5):
+        level="高弹性"; tone="strong"; fit="适合1~2日快进快出"; explain="历史日波动较大，短时间容易拉开幅度，但回撤也更快"
+    elif score>=48:
+        level="中弹性"; tone="neutral"; fit="适合2~5日短波段"; explain="有一定波动空间，但爆发速度通常弱于高弹性票"
+    else:
+        level="低弹性"; tone="weak"; fit="短线效率偏低"; explain="历史波动较小，1~2日内拉开收益空间的能力偏弱"
+    return {"score":score,"level":level,"tone":tone,"atr14_pct":round(atr14,2),"avg_amp10":round(amp10,2),"avg_abs_pct10":round(abs10,2),"swing_fit":fit,"explain":explain}
+
+def quick_elasticity(q):
+    px=q.get("price") or 0; pct=q.get("pct") or 0
+    prev=px/(1+pct/100) if px and abs(1+pct/100)>1e-9 else px
+    hi=q.get("high") or px; lo=q.get("low") or px
+    amp=(hi-lo)/prev*100 if prev else 0
+    score=round(clamp(amp*13+abs(pct)*6),1)
+    level="日内高弹性" if score>=68 else ("日内中弹性" if score>=45 else "日内低弹性")
+    return {"score":score,"level":level,"amplitude_pct":round(amp,2)}
 
 def backtest_stats(h, current_stage=None):
     """
@@ -526,6 +563,12 @@ def make_buy_plan(q,t,early,trig):
         low=ma5*0.992
         high=ma5*1.010
         plan_type="首次站回5日线确认"
+    elif stage=="潜伏蓄势":
+        anchor=max(ma5,ma10*0.998)
+        ideal=min(px,anchor*1.004)
+        low=anchor*0.990
+        high=anchor*1.010
+        plan_type="横盘蓄势承接区"
     else:
         ideal=min(px,ma5*1.003)
         low=ma5*0.990
@@ -569,10 +612,43 @@ def try_eastmoney_flow(code):
     except: pass
     return {"available":False,"main_yi":None,"large_yi":None,"super_yi":None,"positive_2":None}
 
+def fetch_sector_flow():
+    """行业板块主力资金流，可选增强；失败不影响主扫描。"""
+    hosts=["https://82.push2.eastmoney.com/api/qt/clist/get","https://push2.eastmoney.com/api/qt/clist/get"]
+    params={"pn":"1","pz":"200","po":"1","np":"1","ut":"bd1d9ddb04089700cf9c27f6f7426281","fltt":"2","invt":"2","fid":"f62","fs":"m:90 t:2 f:!50","fields":"f12,f14,f2,f3,f6,f62,f184"}
+    for url in hosts:
+        try:
+            r=S.get(url,params=params,timeout=10); r.raise_for_status()
+            j=r.json(); diff=(j.get("data") or {}).get("diff") or []
+            rows=[]
+            for x in diff:
+                try:
+                    main=float(x.get("f62") or 0)
+                    rows.append({
+                        "code":str(x.get("f12") or ""),"name":str(x.get("f14") or ""),
+                        "pct":round(float(x.get("f3") or 0),2),
+                        "amount_yi":round(float(x.get("f6") or 0)/1e8,2),
+                        "main_yi":round(main/1e8,2),
+                        "main_pct":round(float(x.get("f184") or 0),2)
+                    })
+                except:
+                    pass
+            if len(rows)>=20:
+                return {
+                    "available":True,"stale":False,
+                    "updated_at":datetime.now(CN).strftime("%Y-%m-%d %H:%M:%S"),
+                    "inflow":sorted(rows,key=lambda z:z["main_yi"],reverse=True)[:10],
+                    "outflow":sorted(rows,key=lambda z:z["main_yi"])[:8]
+                }
+        except:
+            continue
+    return {"available":False,"stale":False,"updated_at":None,"inflow":[],"outflow":[]}
+
 def analyze(q,market_score=50,include_flow=False):
     h=enrich_today(history(q["bs_code"]),q)
     t=technical(h)
     early=early_stage_features(h)
+    elastic=elasticity_features(h)
 
     liquidity=clamp(45+math.log10(max(q["amount"]/1e8,1))*28)
     anti_chase=clamp(100-max(early["ret5"],0)*8-max(early["up_streak"]-1,0)*12)
@@ -583,15 +659,16 @@ def analyze(q,market_score=50,include_flow=False):
     if flow["available"]:
         flow_score=clamp(50+(14 if flow["main_yi"]>0 else -8)+(8 if flow["positive_2"]==2 else 0))
 
-    # 核心从“趋势强”切换为“早期机会强”
+    # 短波段核心：早期位置 + 弹性。高弹性本身不代表上涨方向。
     score=(
-        early["early_score"]*.54 +
-        t["trend"]*.08 +
-        t["volume"]*.08 +
-        liquidity*.10 +
-        anti_chase*.08 +
-        market_score*.07 +
-        flow_score*.05
+        early["early_score"]*.38 +
+        elastic["score"]*.30 +
+        t["trend"]*.06 +
+        t["volume"]*.06 +
+        liquidity*.08 +
+        anti_chase*.05 +
+        market_score*.04 +
+        flow_score*.03
     )
 
     trig=t["trigger"] if t["trigger"] else q["price"]*1.005
@@ -620,10 +697,14 @@ def analyze(q,market_score=50,include_flow=False):
 
     if early["extended"]:
         status="已涨过滤"
-    elif early["early_score"]>=68 and rise["index"]>=60 and buy_plan["state"]=="进入买点区":
-        status="早期买点"
-    elif early["early_score"]>=60 and rise["index"]>=56:
-        status="早期观察"
+    elif elastic["score"]>=68 and early["early_score"]>=56 and rise["index"]>=56 and buy_plan["state"]=="进入买点区":
+        status="高弹性买点"
+    elif elastic["score"]>=62 and early["early_score"]>=52 and rise["index"]>=52:
+        status="高弹性观察"
+    elif elastic["score"]>=48 and early["early_score"]>=58 and rise["index"]>=56:
+        status="中弹性备选"
+    elif elastic["score"]<48:
+        status="低弹性/不优先"
     else:
         status="放弃"
 
@@ -632,6 +713,7 @@ def analyze(q,market_score=50,include_flow=False):
         "amount_yi":round(q["amount"]/1e8,2),"quote_source":q["quote_source"],
         "score":round(score,1),
         "early_signal":early,
+        "elasticity":elastic,
         "flow_score":round(flow_score),"trend_score":round(t["trend"]),
         "volume_score":round(t["volume"]),"position_score":round(t["position"]),
         "liquidity_score":round(liquidity),"volume_ratio":round(t["vr"],2),
@@ -656,23 +738,90 @@ def main():
         if len(quotes)<2000: raise RuntimeError(f"实时行情股票数异常：{len(quotes)}，拒绝覆盖旧数据")
         by_code={x["code"]:x for x in quotes}; pcts=[x["pct"] for x in quotes]; up=sum(1 for p in pcts if p>0)/len(pcts)*100; med=median(pcts)
         market_score=round(clamp(45+(up-50)*.8+med*5)); market_state="偏强" if market_score>=65 else ("中性" if market_score>=45 else "偏弱")
-        pre=[x for x in quotes if 5<=x["price"]<=30 and x["amount"]>=2e8 and -4.0<=x["pct"]<=4.5]
+        pre=[x for x in quotes if 4<=x["price"]<=32 and x["amount"]>=1.5e8 and -4.5<=x["pct"]<=4.8]
         for x in pre:
             liq=clamp(40+math.log10(max(x["amount"]/1e8,1))*28); calm=clamp(100-abs(x["pct"]-1.0)*10); x["_pre"]=liq*.60+calm*.40
-        pre=sorted(pre,key=lambda z:z["_pre"],reverse=True)[:50]; candidates=[]
+        pre=sorted(pre,key=lambda z:z["_pre"],reverse=True)[:60]; candidates=[]
         for x in pre: candidates.append(analyze(x,market_score=market_score,include_flow=(len(candidates)<8)))
-        candidates=sorted(candidates,key=lambda z:(0 if z.get("early_signal",{}).get("extended") else 1,z.get("early_signal",{}).get("early_score",0),z.get("rise_signal",{}).get("index",0),z["score"]),reverse=True)
+        candidates=sorted(candidates,key=lambda z:(0 if z.get("early_signal",{}).get("extended") else 1,z.get("elasticity",{}).get("score",0),z.get("early_signal",{}).get("early_score",0),z.get("rise_signal",{}).get("index",0)),reverse=True)
         watch=[analyze(by_code[c],market_score=market_score,include_flow=True) for c in WATCHLIST if c in by_code]
-        source_health={"baostock":{"ok":len(universe)>2000,"count":len(universe),"role":"股票池/历史日K"},"quotes":{"ok":len(quotes)>2000,"count":len(quotes),"role":"实时行情","detail":health},"eastmoney_flow":{"ok":any(x["fund_flow"]["available"] for x in watch+candidates[:5]),"role":"资金流（可选增强）"}}
+
+        sector_flow=fetch_sector_flow()
+        old_latest={}
+        try:
+            if Path("data/latest.json").exists():
+                old_latest=json.loads(Path("data/latest.json").read_text(encoding="utf-8"))
+        except:
+            old_latest={}
+        if not sector_flow["available"]:
+            old_sector=old_latest.get("sector_flow") or {}
+            if old_sector.get("inflow"):
+                sector_flow=old_sector
+                sector_flow["stale"]=True
+
+        source_health={
+            "baostock":{"ok":len(universe)>2000,"count":len(universe),"role":"股票池/历史日K"},
+            "quotes":{"ok":len(quotes)>2000,"count":len(quotes),"role":"实时行情","detail":health},
+            "eastmoney_flow":{"ok":any(x["fund_flow"]["available"] for x in watch+candidates[:5]),"role":"个股资金流（可选）"},
+            "sector_flow":{"ok":bool(sector_flow.get("inflow")),"role":"板块资金流（可选）","stale":sector_flow.get("stale",False)}
+        }
         now=datetime.now(CN).strftime("%Y-%m-%d %H:%M:%S")
         # 轻量股票索引：用于网页端“代码/名称搜索添加自选”
         symbols=[{"code":x["code"],"name":x["name"]} for x in quotes]
-        quote_snapshot={x["code"]:{
-            "code":x["code"],"name":x["name"],"price":round(x["price"],2),
-            "pct":round(x["pct"],2),"amount_yi":round(x["amount"]/1e8,2)
-        } for x in quotes}
+        quote_snapshot={}
+        for x in quotes:
+            qe=quick_elasticity(x)
+            quote_snapshot[x["code"]]={
+                "code":x["code"],"name":x["name"],"price":round(x["price"],2),"pct":round(x["pct"],2),
+                "amount_yi":round(x["amount"]/1e8,2),
+                "open":round(x.get("open") or 0,2),"high":round(x.get("high") or 0,2),"low":round(x.get("low") or 0,2),
+                "amplitude_pct":qe["amplitude_pct"],
+                "quick_elasticity_score":qe["score"],
+                "quick_elasticity_level":qe["level"],
+                "quote_source":x.get("quote_source")
+            }
 
-        data={"version":"1.7","updated_at":now,"market":{"score":market_score,"state":market_state,"up_ratio":round(up,1),"median_pct":round(med,2),"universe":len(quotes)},"opportunities":[x for x in candidates if x["status"] in ("早期买点","早期观察") and not x.get("early_signal",{}).get("extended") and x.get("early_signal",{}).get("early_score",0)>=60][:5],"watchlist":watch,"candidates":candidates[:20],"source_health":source_health,"quote_snapshot":quote_snapshot,"rules":{"price":"5-30元","amount":"≥2亿元","day_pct":"-4%~+4.5%","excluded":"科创/创业/北交/ST/退市","holding":"1-5个交易日","anti_chase":"近5日>8% / 近10日>13% / 连涨≥3天 / 距MA5>4.5% 直接过滤"}}
+        # 风险池：告诉用户哪些票“看起来活跃但不适合新买点”
+        avoid_pool=[]
+        for x in candidates:
+            es=x.get("early_signal",{}) or {}
+            el=x.get("elasticity",{}) or {}
+            warnings=list(x.get("warnings") or [])
+            reason=None
+            if es.get("extended"):
+                reason="已涨过滤 / 不追"
+            elif el.get("score",0)<48 and x.get("score",0)>=50:
+                reason="弹性偏小 / 短线效率低"
+            elif es.get("chase_risk")=="高":
+                reason="追高风险高"
+            elif x.get("status") in ("低弹性/不优先","已涨过滤"):
+                reason=x.get("status")
+            if reason:
+                avoid_pool.append({
+                    "code":x.get("code"),"name":x.get("name"),"price":x.get("price"),"pct":x.get("pct"),
+                    "reason":reason,
+                    "elasticity":el,
+                    "early_signal":es,
+                    "fund_flow":x.get("fund_flow"),
+                    "warnings":warnings[:5],
+                    "suggestion":"等待回踩/重新蓄势，不作为当前新买点"
+                })
+        avoid_pool=avoid_pool[:8]
+
+        market_guidance="正常观察，优先高弹性+启动初期" if market_score>=55 else ("环境偏弱，降低仓位，只做最强1-2只" if market_score>=42 else "环境弱，少做或不做")
+
+        data={
+            "version":"2.0","updated_at":now,
+            "market":{"score":market_score,"state":market_state,"guidance":market_guidance,"up_ratio":round(up,1),"median_pct":round(med,2),"universe":len(quotes)},
+            "opportunities":[x for x in candidates if x["status"] in ("高弹性买点","高弹性观察","中弹性备选") and not x.get("early_signal",{}).get("extended") and x.get("elasticity",{}).get("score",0)>=48][:5],
+            "watchlist":watch,
+            "candidates":candidates[:25],
+            "avoid_list":avoid_pool,
+            "sector_flow":sector_flow,
+            "source_health":source_health,
+            "quote_snapshot":quote_snapshot,
+            "rules":{"price":"4-32元","amount":"≥1.5亿元","day_pct":"-4.5%~+4.8%","excluded":"科创/创业/北交/ST/退市","holding":"1-5个交易日","focus":"高弹性优先：ATR14 / 近10日振幅 / 绝对涨跌","anti_chase":"近5日>8% / 近10日>13% / 连涨≥3天 / 距MA5>4.5% 直接过滤"}
+        }
         Path("data").mkdir(exist_ok=True)
         Path("data/latest.json").write_text(json.dumps(data,ensure_ascii=False,separators=(",",":")),encoding="utf-8")
         Path("data/symbols.json").write_text(json.dumps(symbols,ensure_ascii=False,separators=(",",":")),encoding="utf-8")
