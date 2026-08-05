@@ -1,6 +1,6 @@
 <!doctype html><html lang="zh-CN"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>短线机会工作台 V1.6</title>
+<title>短线机会工作台 V1.7</title>
 <style>
 :root{--bg:#0b0d10;--card:#14171c;--card2:#1a1e24;--line:#292f38;--txt:#f2f4f7;--mut:#9098a4;--g:#49d17d;--y:#efb64a;--r:#ef6965;--b:#79a1ff}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font:14px/1.55 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
@@ -33,10 +33,13 @@ input{background:#111419;color:white;border:1px solid var(--line);border-radius:
 @media(max-width:960px){.grid,.grid2{grid-template-columns:1fr}.metrics{grid-template-columns:1fr 1fr}.stockrow{grid-template-columns:1fr 1fr}.top,.banner{align-items:flex-start;flex-direction:column}.journal{grid-template-columns:1fr 1fr}.watch-tools{grid-template-columns:1fr auto}}
 </style></head><body><div class="wrap">
 <div class="top">
- <div><h1>🎯 短线机会工作台 V1.6</h1><div class="sub">模型约5分钟｜行情约15秒｜最多5只机会｜新增买入后待涨判断</div></div>
+ <div><h1>🎯 短线机会工作台 V1.7</h1><div class="sub">模型约5分钟｜行情约15秒｜最多5只机会｜优先抓启动初期，过滤已涨多</div></div>
  <div class="actions"><span class="speed" id="liveClock">行情刷新：—</span><button onclick="loadData(true)">刷新模型结果</button></div>
 </div>
 <div class="panel banner"><div id="status">读取最新扫描结果…</div><div id="health" class="health"></div></div>
+<div class="panel" style="margin-bottom:12px;padding:10px 14px">
+  <span class="tiny">🚫 已涨过滤：近5日 &gt; 8% ｜ 近10日 &gt; 13% ｜ 连涨 ≥ 3天 ｜ 距5日线 &gt; 4.5% → 不进入买点机会池</span>
+</div>
 
 <div class="grid">
 <section class="panel">
@@ -62,12 +65,12 @@ input{background:#111419;color:white;border:1px solid var(--line);border-radius:
 </div>
 
 <div class="grid2">
-<section class="panel"><h2>候选池 TOP20</h2><div style="max-height:520px;overflow:auto"><table><thead><tr><th>股票</th><th>分</th><th>待涨</th><th>5日上涨率</th><th>目标胜率</th><th>买入区</th><th>涨跌</th><th>状态</th></tr></thead><tbody id="tbody"></tbody></table></div></section>
+<section class="panel"><h2>候选池 TOP20</h2><div style="max-height:520px;overflow:auto"><table><thead><tr><th>股票</th><th>早期分</th><th>阶段</th><th>近5日</th><th>连涨</th><th>待涨</th><th>5日上涨率</th><th>买入区</th><th>状态</th></tr></thead><tbody id="tbody"></tbody></table></div></section>
 <section class="panel">
  <div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><h2>交易记录（只存在当前浏览器）</h2><button class="danger mini" onclick="clearJournal()">清空全部</button></div>
  <div class="journal"><input id="jcode" placeholder="代码"><input id="jbuy" placeholder="买入价"><input id="jnote" placeholder="备注"><button onclick="addJournal()">记录</button></div>
  <div id="journalList" style="margin-top:10px"></div>
- <details><summary>口径说明</summary><div class="mut">“待涨指数”是当前结构强弱评分，不是承诺概率；“5日上涨估计”来自历史相似样本上涨率并对小样本向50%收缩；目标胜率仍是先到+3.5%目标、而不是先到-2.5%止损的历史比例。网页端新增自选存于本机浏览器；未进入后台候选池的自选股，会先显示快速行情，评分/买点需等模型扫描覆盖或使用后续的按股即时分析模块。</div></details>
+ <details><summary>口径说明</summary><div class="mut">V1.7 先判断是否属于“启动初期”，已涨过多会直接剔除；“待涨指数”只在早期形态通过后作为第二层判断，不是承诺概率；“5日上涨估计”来自历史相似样本上涨率并对小样本向50%收缩；目标胜率仍是先到+3.5%目标、而不是先到-2.5%止损的历史比例。网页端新增自选存于本机浏览器；未进入后台候选池的自选股，会先显示快速行情，评分/买点需等模型扫描覆盖或使用后续的按股即时分析模块。</div></details>
 </section>
 </div></div>
 
@@ -91,15 +94,15 @@ function dynamicBuyState(x){
  return '超过追价线，不追';
 }
 function stockCard(raw,rank=null){
- const x=currentQuote(raw), bp=x.buy_plan||{}, bt=x.backtest||{}, f=x.fund_flow||{}, rs=x.rise_signal||{};
+ const x=currentQuote(raw), bp=x.buy_plan||{}, bt=x.backtest||{}, f=x.fund_flow||{}, rs=x.rise_signal||{}, es=x.early_signal||{};
  const sc=x.score>=80?'good':(x.score>=70?'warn':'bad');
  const state=dynamicBuyState(x); const tc=state==='进入买点区'?'tag':'tag wait';
  const riseTone='rise-'+(rs.tone||'neutral');
  let chips=(x.reasons||[]).map(s=>`<span class="chip">${s}</span>`).join('')+(x.warnings||[]).map(s=>`<span class="chip w">${s}</span>`).join('');
  return `<div class="stock"><div class="stockrow">
  <div><div class="name">${rank?`<span class="rank">${rank}</span>`:''}${x.name}</div><div class="mut">${x.code} ｜ 现价 <b data-price="${x.code}">${x.price}</b> ｜ <span data-pct="${x.code}" class="${x.pct>=0?'good':'bad'}">${x.pct>=0?'+':''}${x.pct}%</span></div></div>
- <div><div class="score ${sc}">${x.score}</div><div class="mut">综合分</div></div>
- <div class="buybox"><div class="tiny">计划买入区</div><div class="buyprice">${bp.buy_low??'—'} ～ ${bp.buy_high??'—'}</div><div class="tiny">理想价 ${bp.ideal_buy??'—'} ｜ 不追 ＞ ${bp.no_chase??'—'}<br>止损 ${x.stop} ｜ 目标 ${x.target1} / ${x.target2}</div></div>
+ <div><div class="score ${sc}">${es.early_score??x.score}</div><div class="mut">早期机会分</div><div class="tiny">${es.stage||"—"}</div></div>
+ <div class="buybox"><div class="tiny">计划买入区｜${bp.type||"—"}</div><div class="buyprice">${bp.buy_low??'—'} ～ ${bp.buy_high??'—'}</div><div class="tiny">理想价 ${bp.ideal_buy??'—'} ｜ 不追 ＞ ${bp.no_chase??'—'}<br>近5日 ${es.ret5??'—'}% ｜ 连涨 ${es.up_streak??'—'}天 ｜ 距MA5 ${es.dist_ma5??'—'}%<br>止损 ${x.stop} ｜ 目标 ${x.target1} / ${x.target2}</div></div>
  <div class="risebox">
    <div class="risehead"><span class="riselevel ${riseTone}">${rs.level||'待涨待评估'}</span><span class="riseidx ${riseTone}">${rs.index??'—'}</span></div>
    <div class="tiny">待涨指数 /100</div>
@@ -108,8 +111,8 @@ function stockCard(raw,rank=null){
  <div><span class="${tc}">${state}</span><div class="kv" style="margin-top:5px">${rs.confidence||bt.confidence||'样本不足'}｜${rs.sample_size??bt.sample_size??0}次<br><span class="tiny">${rs.conclusion||''}</span><br>资金 <b>${f.available?money(f.main_yi):'未接入'}</b></div></div>
  </div><div class="chips">${chips||'<span class="mut">暂无额外信号</span>'}</div>
  <details><summary>查看统计与后台条件</summary><div class="kv">
- 技术触发价 <b>${x.trigger}</b> ｜ 量比 <b>${x.volume_ratio}</b> ｜ 盈亏比 <b>${x.rr1}</b><br>
- 历史上涨率：1日 ${bt.up_rate_1d??'—'}% ｜ 3日 ${bt.up_rate_3d??'—'}% ｜ 5日 ${bt.up_rate_5d??'—'}%<br>
+ 阶段 <b>${es.stage||"—"}</b> ｜ 追高风险 <b>${es.chase_risk||"—"}</b> ｜ 早期分 <b>${es.early_score??"—"}</b><br>近3/5/10日 <b>${es.ret3??"—"}% / ${es.ret5??"—"}% / ${es.ret10??"—"}%</b> ｜ 连涨 <b>${es.up_streak??"—"}天</b> ｜ 距MA5 <b>${es.dist_ma5??"—"}%</b><br>技术触发价 <b>${x.trigger}</b> ｜ 量比 <b>${x.volume_ratio}</b> ｜ 盈亏比 <b>${x.rr1}</b><br>
+ 回测匹配：${bt.match_type||"—"}｜样本 ${bt.sample_size??0}次<br>历史上涨率：1日 ${bt.up_rate_1d??'—'}% ｜ 3日 ${bt.up_rate_3d??'—'}% ｜ 5日 ${bt.up_rate_5d??'—'}%<br>
  目标胜率：1日 ${bt.win_rate_1d??'—'}% ｜ 3日 ${bt.win_rate_3d??'—'}% ｜ 5日 ${bt.win_rate_5d??'—'}%<br>
  平均收益：1日 ${bt.avg_1d_return??'—'}% ｜ 3日 ${bt.avg_3d_return??'—'}% ｜ 5日 ${bt.avg_5d_return??'—'}%<br>
  5日平均最大上冲 ${bt.avg_max_up_5d??'—'}% ｜ 平均最大回撤 ${bt.avg_max_drawdown_5d??'—'}%
@@ -149,7 +152,7 @@ function renderWatch(){
    if(x){
      x=currentQuote(x);
      const rs=x.rise_signal||{};
-     return `<div class="watch-item"><div><b>${x.name}</b> <span class="mut">${code}</span><br><span class="${x.pct>=0?'good':'bad'}">${x.price}　${x.pct>=0?'+':''}${x.pct}%</span>　<span class="tiny">评分 ${x.score}｜<b class="rise-${rs.tone||'neutral'}">${rs.level||'待评估'} ${rs.index??'—'}</b>｜5日上涨估计 ${rs.estimated_up_5d??'—'}%｜买入区 ${(x.buy_plan||{}).buy_low??'—'}～${(x.buy_plan||{}).buy_high??'—'}｜${dynamicBuyState(x)}</span></div><button class="danger mini" onclick="removeWatch('${code}')">删除</button></div>`;
+     return `<div class="watch-item"><div><b>${x.name}</b> <span class="mut">${code}</span><br><span class="${x.pct>=0?'good':'bad'}">${x.price}　${x.pct>=0?'+':''}${x.pct}%</span>　<span class="tiny">阶段 ${(x.early_signal||{}).stage||'—'}｜近5日 ${(x.early_signal||{}).ret5??'—'}%｜<b class="rise-${rs.tone||'neutral'}">${rs.level||'待评估'} ${rs.index??'—'}</b>｜5日上涨估计 ${rs.estimated_up_5d??'—'}%｜买入区 ${(x.buy_plan||{}).buy_low??'—'}～${(x.buy_plan||{}).buy_high??'—'}｜${dynamicBuyState(x)}</span></div><button class="danger mini" onclick="removeWatch('${code}')">删除</button></div>`;
    }
    if(q){
      return `<div class="watch-item"><div><b>${q.name||s?.name||code}</b> <span class="mut">${code}</span><br><span class="${q.pct>=0?'good':'bad'}">${q.price}　${q.pct>=0?'+':''}${q.pct}%</span>　<span class="tiny">快速行情｜尚未进入后台深度分析池</span></div><button class="danger mini" onclick="removeWatch('${code}')">删除</button></div>`;
@@ -164,7 +167,7 @@ function renderMain(){
  $('mScore').textContent=d.market.score+'/100'; $('mState').textContent=d.market.state||'—'; $('mUp').textContent=d.market.up_ratio+'%'; $('mMed').textContent=(d.market.median_pct>=0?'+':'')+d.market.median_pct+'%';
  const h=d.source_health||{}; $('health').innerHTML=Object.values(h).map(x=>`<span><i class="dot ${x.ok?'':'off'}"></i>${x.role}</span>`).join('');
  $('opps').innerHTML=(d.opportunities||[]).length?d.opportunities.map((x,i)=>stockCard(x,i+1)).join(''):'<div class="empty">没有达到阈值的机会。今天可以不做。</div>';
- $('tbody').innerHTML=(d.candidates||[]).map(raw=>{const x=currentQuote(raw),bp=x.buy_plan||{},bt=x.backtest||{},rs=x.rise_signal||{};return `<tr><td><b>${x.name}</b><br><span class="mut">${x.code}</span></td><td>${x.score}</td><td><b class="rise-${rs.tone||'neutral'}">${rs.level||'—'} ${rs.index??'—'}</b></td><td>${rs.estimated_up_5d??bt.up_rate_5d??'—'}%<br><span class="tiny">${bt.sample_size||0}次</span></td><td>${rs.target_win_5d??bt.win_rate_5d??'—'}%</td><td>${bp.buy_low??'—'}～${bp.buy_high??'—'}</td><td class="${x.pct>=0?'good':'bad'}">${x.pct>=0?'+':''}${x.pct}%</td><td>${dynamicBuyState(x)}</td></tr>`}).join('');
+ $('tbody').innerHTML=(d.candidates||[]).map(raw=>{const x=currentQuote(raw),bp=x.buy_plan||{},bt=x.backtest||{},rs=x.rise_signal||{},es=x.early_signal||{};return `<tr><td><b>${x.name}</b><br><span class="mut">${x.code}</span></td><td>${es.early_score??x.score}</td><td>${es.stage||'—'}<br><span class="tiny">追高${es.chase_risk||'—'}</span></td><td class="${(es.ret5??0)>6?'bad':'good'}">${es.ret5??'—'}%</td><td>${es.up_streak??'—'}天</td><td><b class="rise-${rs.tone||'neutral'}">${rs.level||'—'} ${rs.index??'—'}</b></td><td>${rs.estimated_up_5d??bt.up_rate_5d??'—'}%<br><span class="tiny">${bt.sample_size||0}次</span></td><td>${bp.buy_low??'—'}～${bp.buy_high??'—'}</td><td>${x.status}</td></tr>`}).join('');
  renderWatch();
 }
 async function loadData(manual=false){
