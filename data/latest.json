@@ -1,18 +1,880 @@
 {
-  "updated_at": "2026-08-05 12:13:33",
+  "version": "1.3",
+  "updated_at": "2026-08-05 14:18:48",
   "market": {
-    "score": 100,
-    "up_ratio": 100.0,
-    "median_pct": 10.01,
-    "universe": 45
+    "score": 40,
+    "state": "偏弱",
+    "up_ratio": 44.6,
+    "median_pct": -0.12,
+    "universe": 3216
   },
-  "opportunities": [],
-  "candidates": [],
+  "opportunities": [
+    {
+      "code": "002354",
+      "name": "天娱数科",
+      "price": 7.86,
+      "pct": -0.25,
+      "amount_yi": 37.23,
+      "quote_source": "新浪",
+      "score": 76.7,
+      "flow_score": 40,
+      "trend_score": 72,
+      "volume_score": 80,
+      "position_score": 77,
+      "liquidity_score": 89,
+      "volume_ratio": 2.01,
+      "trigger": 7.88,
+      "stop": 5.88,
+      "target1": 8.16,
+      "target2": 8.35,
+      "rr1": 0.14,
+      "status": "重点观察",
+      "reasons": [
+        "站上5日线",
+        "5日线强于10日线",
+        "量能增强 2.0x"
+      ],
+      "warnings": [],
+      "fund_flow": {
+        "available": true,
+        "main_yi": -2.13,
+        "large_yi": -1.18,
+        "super_yi": -0.95,
+        "positive_2": 0
+      }
+    },
+    {
+      "code": "600602",
+      "name": "云赛智联",
+      "price": 18.41,
+      "pct": -0.75,
+      "amount_yi": 9.87,
+      "quote_source": "新浪",
+      "score": 73.0,
+      "flow_score": 50,
+      "trend_score": 72,
+      "volume_score": 48,
+      "position_score": 98,
+      "liquidity_score": 73,
+      "volume_ratio": 1.08,
+      "trigger": 18.63,
+      "stop": 16.01,
+      "target1": 19.28,
+      "target2": 19.75,
+      "rr1": 0.25,
+      "status": "重点观察",
+      "reasons": [
+        "站上5日线",
+        "5日线强于10日线",
+        "处于20日中位区"
+      ],
+      "warnings": [],
+      "fund_flow": {
+        "available": false,
+        "main_yi": null,
+        "large_yi": null,
+        "super_yi": null,
+        "positive_2": null
+      }
+    }
+  ],
+  "watchlist": [
+    {
+      "code": "600105",
+      "name": "永鼎股份",
+      "price": 36.4,
+      "pct": 6.15,
+      "amount_yi": 83.95,
+      "quote_source": "新浪",
+      "score": 63.8,
+      "flow_score": 40,
+      "trend_score": 72,
+      "volume_score": 49,
+      "position_score": 68,
+      "liquidity_score": 99,
+      "volume_ratio": 1.13,
+      "trigger": 36.33,
+      "stop": 30.57,
+      "target1": 37.6,
+      "target2": 38.51,
+      "rr1": 0.22,
+      "status": "放弃",
+      "reasons": [
+        "站上5日线",
+        "5日线强于10日线",
+        "量能增强 1.1x"
+      ],
+      "warnings": [
+        "当日涨幅偏高，禁止追价"
+      ],
+      "fund_flow": {
+        "available": true,
+        "main_yi": -5.78,
+        "large_yi": -1.75,
+        "super_yi": -4.03,
+        "positive_2": 0
+      }
+    },
+    {
+      "code": "000021",
+      "name": "深科技",
+      "price": 38.5,
+      "pct": 5.36,
+      "amount_yi": 53.58,
+      "quote_source": "新浪",
+      "score": 57.6,
+      "flow_score": 66,
+      "trend_score": 54,
+      "volume_score": 42,
+      "position_score": 54,
+      "liquidity_score": 93,
+      "volume_ratio": 0.92,
+      "trigger": 38.42,
+      "stop": 34.4,
+      "target1": 39.77,
+      "target2": 40.73,
+      "rr1": 0.33,
+      "status": "放弃",
+      "reasons": [
+        "站上5日线",
+        "主力资金净流入"
+      ],
+      "warnings": [
+        "当日涨幅偏高，禁止追价"
+      ],
+      "fund_flow": {
+        "available": true,
+        "main_yi": 2.11,
+        "large_yi": -0.07,
+        "super_yi": 2.18,
+        "positive_2": 1
+      }
+    }
+  ],
+  "candidates": [
+    {
+      "code": "002354",
+      "name": "天娱数科",
+      "price": 7.86,
+      "pct": -0.25,
+      "amount_yi": 37.23,
+      "quote_source": "新浪",
+      "score": 76.7,
+      "flow_score": 40,
+      "trend_score": 72,
+      "volume_score": 80,
+      "position_score": 77,
+      "liquidity_score": 89,
+      "volume_ratio": 2.01,
+      "trigger": 7.88,
+      "stop": 5.88,
+      "target1": 8.16,
+      "target2": 8.35,
+      "rr1": 0.14,
+      "status": "重点观察",
+      "reasons": [
+        "站上5日线",
+        "5日线强于10日线",
+        "量能增强 2.0x"
+      ],
+      "warnings": [],
+      "fund_flow": {
+        "available": true,
+        "main_yi": -2.13,
+        "large_yi": -1.18,
+        "super_yi": -0.95,
+        "positive_2": 0
+      }
+    },
+    {
+      "code": "600602",
+      "name": "云赛智联",
+      "price": 18.41,
+      "pct": -0.75,
+      "amount_yi": 9.87,
+      "quote_source": "新浪",
+      "score": 73.0,
+      "flow_score": 50,
+      "trend_score": 72,
+      "volume_score": 48,
+      "position_score": 98,
+      "liquidity_score": 73,
+      "volume_ratio": 1.08,
+      "trigger": 18.63,
+      "stop": 16.01,
+      "target1": 19.28,
+      "target2": 19.75,
+      "rr1": 0.25,
+      "status": "重点观察",
+      "reasons": [
+        "站上5日线",
+        "5日线强于10日线",
+        "处于20日中位区"
+      ],
+      "warnings": [],
+      "fund_flow": {
+        "available": false,
+        "main_yi": null,
+        "large_yi": null,
+        "super_yi": null,
+        "positive_2": null
+      }
+    },
+    {
+      "code": "000533",
+      "name": "顺钠股份",
+      "price": 12.57,
+      "pct": -0.24,
+      "amount_yi": 23.38,
+      "quote_source": "新浪",
+      "score": 69.7,
+      "flow_score": 40,
+      "trend_score": 87,
+      "volume_score": 53,
+      "position_score": 47,
+      "liquidity_score": 83,
+      "volume_ratio": 1.23,
+      "trigger": 12.6,
+      "stop": 9.83,
+      "target1": 13.04,
+      "target2": 13.36,
+      "rr1": 0.16,
+      "status": "放弃",
+      "reasons": [
+        "站上5日线",
+        "5日线强于10日线",
+        "中短趋势向上",
+        "量能增强 1.2x"
+      ],
+      "warnings": [
+        "接近20日高位"
+      ],
+      "fund_flow": {
+        "available": true,
+        "main_yi": -1.09,
+        "large_yi": -0.1,
+        "super_yi": -0.99,
+        "positive_2": 0
+      }
+    },
+    {
+      "code": "601179",
+      "name": "中国西电",
+      "price": 14.17,
+      "pct": -1.39,
+      "amount_yi": 25.67,
+      "quote_source": "新浪",
+      "score": 69.0,
+      "flow_score": 40,
+      "trend_score": 87,
+      "volume_score": 40,
+      "position_score": 55,
+      "liquidity_score": 84,
+      "volume_ratio": 0.87,
+      "trigger": 14.57,
+      "stop": 13.11,
+      "target1": 15.08,
+      "target2": 15.44,
+      "rr1": 0.35,
+      "status": "放弃",
+      "reasons": [
+        "站上5日线",
+        "5日线强于10日线",
+        "中短趋势向上"
+      ],
+      "warnings": [
+        "接近20日高位"
+      ],
+      "fund_flow": {
+        "available": true,
+        "main_yi": -1.74,
+        "large_yi": -1.26,
+        "super_yi": -0.47,
+        "positive_2": 0
+      }
+    },
+    {
+      "code": "603881",
+      "name": "数据港",
+      "price": 26.31,
+      "pct": 0.27,
+      "amount_yi": 14.97,
+      "quote_source": "新浪",
+      "score": 68.9,
+      "flow_score": 50,
+      "trend_score": 72,
+      "volume_score": 58,
+      "position_score": 62,
+      "liquidity_score": 78,
+      "volume_ratio": 1.38,
+      "trigger": 26.39,
+      "stop": 22.94,
+      "target1": 27.31,
+      "target2": 27.97,
+      "rr1": 0.27,
+      "status": "放弃",
+      "reasons": [
+        "站上5日线",
+        "5日线强于10日线",
+        "量能增强 1.4x"
+      ],
+      "warnings": [
+        "接近20日高位"
+      ],
+      "fund_flow": {
+        "available": false,
+        "main_yi": null,
+        "large_yi": null,
+        "super_yi": null,
+        "positive_2": null
+      }
+    },
+    {
+      "code": "600089",
+      "name": "特变电工",
+      "price": 21.37,
+      "pct": -0.05,
+      "amount_yi": 22.39,
+      "quote_source": "新浪",
+      "score": 68.8,
+      "flow_score": 40,
+      "trend_score": 87,
+      "volume_score": 43,
+      "position_score": 53,
+      "liquidity_score": 83,
+      "volume_ratio": 0.93,
+      "trigger": 21.56,
+      "stop": 20.36,
+      "target1": 22.31,
+      "target2": 22.85,
+      "rr1": 0.63,
+      "status": "放弃",
+      "reasons": [
+        "站上5日线",
+        "5日线强于10日线",
+        "中短趋势向上"
+      ],
+      "warnings": [
+        "接近20日高位"
+      ],
+      "fund_flow": {
+        "available": true,
+        "main_yi": -0.74,
+        "large_yi": -0.46,
+        "super_yi": -0.28,
+        "positive_2": 0
+      }
+    },
+    {
+      "code": "002498",
+      "name": "汉缆股份",
+      "price": 7.17,
+      "pct": -2.85,
+      "amount_yi": 12.7,
+      "quote_source": "新浪",
+      "score": 68.6,
+      "flow_score": 50,
+      "trend_score": 87,
+      "volume_score": 37,
+      "position_score": 58,
+      "liquidity_score": 76,
+      "volume_ratio": 0.76,
+      "trigger": 7.42,
+      "stop": 6.68,
+      "target1": 7.68,
+      "target2": 7.87,
+      "rr1": 0.35,
+      "status": "放弃",
+      "reasons": [
+        "站上5日线",
+        "5日线强于10日线",
+        "中短趋势向上"
+      ],
+      "warnings": [
+        "接近20日高位"
+      ],
+      "fund_flow": {
+        "available": false,
+        "main_yi": null,
+        "large_yi": null,
+        "super_yi": null,
+        "positive_2": null
+      }
+    },
+    {
+      "code": "002015",
+      "name": "协鑫能科",
+      "price": 16.01,
+      "pct": -0.56,
+      "amount_yi": 12.79,
+      "quote_source": "新浪",
+      "score": 68.3,
+      "flow_score": 50,
+      "trend_score": 87,
+      "volume_score": 43,
+      "position_score": 50,
+      "liquidity_score": 76,
+      "volume_ratio": 0.95,
+      "trigger": 16.22,
+      "stop": 13.66,
+      "target1": 16.79,
+      "target2": 17.19,
+      "rr1": 0.22,
+      "status": "放弃",
+      "reasons": [
+        "站上5日线",
+        "5日线强于10日线",
+        "中短趋势向上"
+      ],
+      "warnings": [
+        "接近20日高位"
+      ],
+      "fund_flow": {
+        "available": false,
+        "main_yi": null,
+        "large_yi": null,
+        "super_yi": null,
+        "positive_2": null
+      }
+    },
+    {
+      "code": "601991",
+      "name": "大唐发电",
+      "price": 6.38,
+      "pct": 0.79,
+      "amount_yi": 27.4,
+      "quote_source": "新浪",
+      "score": 68.2,
+      "flow_score": 50,
+      "trend_score": 54,
+      "volume_score": 43,
+      "position_score": 98,
+      "liquidity_score": 85,
+      "volume_ratio": 0.95,
+      "trigger": 6.46,
+      "stop": 5.72,
+      "target1": 6.69,
+      "target2": 6.85,
+      "rr1": 0.31,
+      "status": "放弃",
+      "reasons": [
+        "站上5日线",
+        "处于20日中位区"
+      ],
+      "warnings": [],
+      "fund_flow": {
+        "available": false,
+        "main_yi": null,
+        "large_yi": null,
+        "super_yi": null,
+        "positive_2": null
+      }
+    },
+    {
+      "code": "600031",
+      "name": "三一重工",
+      "price": 19.56,
+      "pct": 0.15,
+      "amount_yi": 14.19,
+      "quote_source": "新浪",
+      "score": 68.2,
+      "flow_score": 50,
+      "trend_score": 64,
+      "volume_score": 37,
+      "position_score": 91,
+      "liquidity_score": 77,
+      "volume_ratio": 0.77,
+      "trigger": 20.24,
+      "stop": 19.33,
+      "target1": 20.95,
+      "target2": 21.46,
+      "rr1": 0.77,
+      "status": "放弃",
+      "reasons": [
+        "5日线强于10日线",
+        "中短趋势向上",
+        "处于20日中位区"
+      ],
+      "warnings": [],
+      "fund_flow": {
+        "available": false,
+        "main_yi": null,
+        "large_yi": null,
+        "super_yi": null,
+        "positive_2": null
+      }
+    },
+    {
+      "code": "601166",
+      "name": "兴业银行",
+      "price": 18.35,
+      "pct": -1.13,
+      "amount_yi": 14.74,
+      "quote_source": "新浪",
+      "score": 68.1,
+      "flow_score": 50,
+      "trend_score": 64,
+      "volume_score": 33,
+      "position_score": 93,
+      "liquidity_score": 78,
+      "volume_ratio": 0.66,
+      "trigger": 18.99,
+      "stop": 18.27,
+      "target1": 19.66,
+      "target2": 20.13,
+      "rr1": 0.92,
+      "status": "放弃",
+      "reasons": [
+        "5日线强于10日线",
+        "中短趋势向上",
+        "处于20日中位区"
+      ],
+      "warnings": [],
+      "fund_flow": {
+        "available": false,
+        "main_yi": null,
+        "large_yi": null,
+        "super_yi": null,
+        "positive_2": null
+      }
+    },
+    {
+      "code": "600875",
+      "name": "东方电气",
+      "price": 27.74,
+      "pct": 0.47,
+      "amount_yi": 18.74,
+      "quote_source": "新浪",
+      "score": 67.9,
+      "flow_score": 50,
+      "trend_score": 87,
+      "volume_score": 44,
+      "position_score": 46,
+      "liquidity_score": 81,
+      "volume_ratio": 0.98,
+      "trigger": 28.07,
+      "stop": 24.55,
+      "target1": 29.05,
+      "target2": 29.75,
+      "rr1": 0.28,
+      "status": "放弃",
+      "reasons": [
+        "站上5日线",
+        "5日线强于10日线",
+        "中短趋势向上"
+      ],
+      "warnings": [
+        "接近20日高位"
+      ],
+      "fund_flow": {
+        "available": false,
+        "main_yi": null,
+        "large_yi": null,
+        "super_yi": null,
+        "positive_2": null
+      }
+    },
+    {
+      "code": "600887",
+      "name": "伊利股份",
+      "price": 26.36,
+      "pct": -0.04,
+      "amount_yi": 11.85,
+      "quote_source": "新浪",
+      "score": 67.8,
+      "flow_score": 50,
+      "trend_score": 64,
+      "volume_score": 29,
+      "position_score": 98,
+      "liquidity_score": 75,
+      "volume_ratio": 0.55,
+      "trigger": 27.28,
+      "stop": 26.07,
+      "target1": 28.24,
+      "target2": 28.92,
+      "rr1": 0.79,
+      "status": "放弃",
+      "reasons": [
+        "5日线强于10日线",
+        "中短趋势向上",
+        "处于20日中位区"
+      ],
+      "warnings": [],
+      "fund_flow": {
+        "available": false,
+        "main_yi": null,
+        "large_yi": null,
+        "super_yi": null,
+        "positive_2": null
+      }
+    },
+    {
+      "code": "002517",
+      "name": "恺英网络",
+      "price": 18.28,
+      "pct": -1.61,
+      "amount_yi": 18.9,
+      "quote_source": "新浪",
+      "score": 67.7,
+      "flow_score": 40,
+      "trend_score": 87,
+      "volume_score": 36,
+      "position_score": 56,
+      "liquidity_score": 81,
+      "volume_ratio": 0.74,
+      "trigger": 18.92,
+      "stop": 16.2,
+      "target1": 19.58,
+      "target2": 20.05,
+      "rr1": 0.24,
+      "status": "放弃",
+      "reasons": [
+        "站上5日线",
+        "5日线强于10日线",
+        "中短趋势向上"
+      ],
+      "warnings": [
+        "接近20日高位"
+      ],
+      "fund_flow": {
+        "available": true,
+        "main_yi": -2.79,
+        "large_yi": -0.39,
+        "super_yi": -2.4,
+        "positive_2": 0
+      }
+    },
+    {
+      "code": "601857",
+      "name": "中国石油",
+      "price": 10.65,
+      "pct": -1.93,
+      "amount_yi": 14.88,
+      "quote_source": "新浪",
+      "score": 67.7,
+      "flow_score": 50,
+      "trend_score": 64,
+      "volume_score": 41,
+      "position_score": 83,
+      "liquidity_score": 78,
+      "volume_ratio": 0.89,
+      "trigger": 11.02,
+      "stop": 10.54,
+      "target1": 11.41,
+      "target2": 11.68,
+      "rr1": 0.8,
+      "status": "放弃",
+      "reasons": [
+        "5日线强于10日线",
+        "中短趋势向上",
+        "处于20日中位区"
+      ],
+      "warnings": [],
+      "fund_flow": {
+        "available": false,
+        "main_yi": null,
+        "large_yi": null,
+        "super_yi": null,
+        "positive_2": null
+      }
+    },
+    {
+      "code": "000001",
+      "name": "平安银行",
+      "price": 11.23,
+      "pct": -1.84,
+      "amount_yi": 14.54,
+      "quote_source": "新浪",
+      "score": 67.5,
+      "flow_score": 50,
+      "trend_score": 64,
+      "volume_score": 36,
+      "position_score": 87,
+      "liquidity_score": 78,
+      "volume_ratio": 0.75,
+      "trigger": 11.62,
+      "stop": 11.18,
+      "target1": 12.03,
+      "target2": 12.32,
+      "rr1": 0.92,
+      "status": "放弃",
+      "reasons": [
+        "5日线强于10日线",
+        "中短趋势向上",
+        "处于20日中位区"
+      ],
+      "warnings": [],
+      "fund_flow": {
+        "available": false,
+        "main_yi": null,
+        "large_yi": null,
+        "super_yi": null,
+        "positive_2": null
+      }
+    },
+    {
+      "code": "601328",
+      "name": "交通银行",
+      "price": 6.93,
+      "pct": -1.56,
+      "amount_yi": 10.68,
+      "quote_source": "新浪",
+      "score": 67.4,
+      "flow_score": 50,
+      "trend_score": 64,
+      "volume_score": 30,
+      "position_score": 96,
+      "liquidity_score": 74,
+      "volume_ratio": 0.56,
+      "trigger": 7.17,
+      "stop": 6.91,
+      "target1": 7.42,
+      "target2": 7.6,
+      "rr1": 0.96,
+      "status": "放弃",
+      "reasons": [
+        "5日线强于10日线",
+        "中短趋势向上",
+        "处于20日中位区"
+      ],
+      "warnings": [],
+      "fund_flow": {
+        "available": false,
+        "main_yi": null,
+        "large_yi": null,
+        "super_yi": null,
+        "positive_2": null
+      }
+    },
+    {
+      "code": "601985",
+      "name": "中国核电",
+      "price": 8.8,
+      "pct": -1.46,
+      "amount_yi": 13.29,
+      "quote_source": "新浪",
+      "score": 67.3,
+      "flow_score": 50,
+      "trend_score": 64,
+      "volume_score": 50,
+      "position_score": 73,
+      "liquidity_score": 76,
+      "volume_ratio": 1.15,
+      "trigger": 9.11,
+      "stop": 8.8,
+      "target1": 9.43,
+      "target2": 9.65,
+      "rr1": 1.03,
+      "status": "放弃",
+      "reasons": [
+        "5日线强于10日线",
+        "中短趋势向上",
+        "量能增强 1.2x",
+        "处于20日中位区"
+      ],
+      "warnings": [],
+      "fund_flow": {
+        "available": false,
+        "main_yi": null,
+        "large_yi": null,
+        "super_yi": null,
+        "positive_2": null
+      }
+    },
+    {
+      "code": "601288",
+      "name": "农业银行",
+      "price": 6.47,
+      "pct": -2.12,
+      "amount_yi": 31.51,
+      "quote_source": "新浪",
+      "score": 66.8,
+      "flow_score": 40,
+      "trend_score": 64,
+      "volume_score": 39,
+      "position_score": 77,
+      "liquidity_score": 87,
+      "volume_ratio": 0.84,
+      "trigger": 6.7,
+      "stop": 6.44,
+      "target1": 6.93,
+      "target2": 7.1,
+      "rr1": 0.91,
+      "status": "放弃",
+      "reasons": [
+        "5日线强于10日线",
+        "中短趋势向上",
+        "处于20日中位区"
+      ],
+      "warnings": [],
+      "fund_flow": {
+        "available": true,
+        "main_yi": -2.64,
+        "large_yi": -0.42,
+        "super_yi": -2.22,
+        "positive_2": 0
+      }
+    },
+    {
+      "code": "601398",
+      "name": "工商银行",
+      "price": 7.51,
+      "pct": -1.96,
+      "amount_yi": 38.59,
+      "quote_source": "新浪",
+      "score": 66.0,
+      "flow_score": 40,
+      "trend_score": 64,
+      "volume_score": 43,
+      "position_score": 67,
+      "liquidity_score": 89,
+      "volume_ratio": 0.95,
+      "trigger": 7.77,
+      "stop": 7.47,
+      "target1": 8.04,
+      "target2": 8.24,
+      "rr1": 0.9,
+      "status": "放弃",
+      "reasons": [
+        "5日线强于10日线",
+        "中短趋势向上"
+      ],
+      "warnings": [],
+      "fund_flow": {
+        "available": true,
+        "main_yi": -1.33,
+        "large_yi": 1.56,
+        "super_yi": -2.89,
+        "positive_2": 0
+      }
+    }
+  ],
+  "source_health": {
+    "baostock": {
+      "ok": true,
+      "count": 3413,
+      "role": "股票池/历史日K"
+    },
+    "quotes": {
+      "ok": true,
+      "count": 3216,
+      "role": "实时行情",
+      "detail": {
+        "sina_count": 3192,
+        "tencent_fallback_count": 24,
+        "merged_count": 3216
+      }
+    },
+    "eastmoney_flow": {
+      "ok": true,
+      "role": "资金流（可选增强）"
+    }
+  },
   "rules": {
     "price": "5-30元",
-    "amount": "≥5亿元",
-    "turnover": "≥1%",
+    "amount": "≥3亿元",
     "day_pct": "-7.5%~+5%",
-    "excluded": "科创/创业/北交/ST/退市"
+    "excluded": "科创/创业/北交/ST/退市",
+    "holding": "1-5个交易日"
   }
 }
