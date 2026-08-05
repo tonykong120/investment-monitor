@@ -1,10 +1,10 @@
 {
-  "updated_at": "2026-08-04 14:01:36",
+  "updated_at": "2026-08-05 12:13:33",
   "market": {
-    "score": 5,
-    "up_ratio": 0.0,
-    "median_pct": 0,
-    "universe": 0
+    "score": 100,
+    "up_ratio": 100.0,
+    "median_pct": 10.01,
+    "universe": 45
   },
   "opportunities": [],
   "candidates": [],
