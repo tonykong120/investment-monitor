@@ -1,66 +1,227 @@
 <!doctype html><html lang="zh-CN"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>短线机会工作台 V1.4</title>
+<title>短线机会工作台 V1.6</title>
 <style>
 :root{--bg:#0b0d10;--card:#14171c;--card2:#1a1e24;--line:#292f38;--txt:#f2f4f7;--mut:#9098a4;--g:#49d17d;--y:#efb64a;--r:#ef6965;--b:#79a1ff}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font:14px/1.55 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
-.wrap{max-width:1480px;margin:auto;padding:22px}.top{display:flex;justify-content:space-between;align-items:end;gap:14px;margin-bottom:15px}
-h1{font-size:23px;margin:0}.sub,.mut{font-size:12px;color:var(--mut)}button{background:#2e5cff;color:white;border:0;border-radius:8px;padding:9px 13px;cursor:pointer}
+.wrap{max-width:1500px;margin:auto;padding:22px}.top{display:flex;justify-content:space-between;align-items:end;gap:14px;margin-bottom:15px}
+h1{font-size:23px;margin:0}.sub,.mut,.tiny{font-size:12px;color:var(--mut)}button{background:#2e5cff;color:white;border:0;border-radius:8px;padding:9px 13px;cursor:pointer}
+button.secondary{background:#343941}button.danger{background:#6b3030}button.mini{padding:5px 8px;font-size:11px}
 .panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:15px}.panel h2{font-size:14px;margin:0 0 11px}
 .banner{margin-bottom:12px;display:flex;justify-content:space-between;gap:10px;align-items:center}.grid{display:grid;grid-template-columns:1.42fr .58fr;gap:12px}.grid2{display:grid;grid-template-columns:1.15fr .85fr;gap:12px;margin-top:12px}
 .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.metric{background:var(--card2);border:1px solid var(--line);border-radius:9px;padding:11px}.big{font-size:22px;font-weight:800}
-.cards{display:grid;gap:9px}.stock{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:13px}.stockrow{display:grid;grid-template-columns:1.05fr .42fr 1.18fr .9fr;gap:12px;align-items:center}
+.cards{display:grid;gap:9px}.stock{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:13px}.stockrow{display:grid;grid-template-columns:1.0fr .36fr 1.05fr 1.05fr .72fr;gap:12px;align-items:center}
 .name{font-size:16px;font-weight:750}.score{font-size:27px;font-weight:850}.good{color:var(--g)}.warn{color:var(--y)}.bad{color:var(--r)}
 .tag{display:inline-block;border-radius:6px;padding:3px 7px;background:#20372a;color:var(--g);font-weight:700;font-size:12px}.tag.wait{background:#3a311e;color:var(--y)}
 .kv{font-size:12px;color:var(--mut);line-height:1.75}.kv b{color:var(--txt)}.chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px}.chip{padding:3px 7px;border-radius:999px;background:#202a23;color:#9de0b5;font-size:11px}.chip.w{background:#352a20;color:#efc17b}
-.buybox{border:1px solid #35563f;background:#14241a;border-radius:9px;padding:9px 10px}.buyprice{font-size:19px;font-weight:850;color:var(--g);letter-spacing:.2px}.win{font-size:17px;font-weight:800}.tiny{font-size:11px;color:var(--mut)}
+.buybox{border:1px solid #35563f;background:#14241a;border-radius:9px;padding:9px 10px}
+.risebox{border:1px solid #364253;background:#151d29;border-radius:9px;padding:9px 10px}
+.risehead{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.riselevel{font-size:16px;font-weight:850}.riseidx{font-size:22px;font-weight:900}
+.rise-strong,.rise-good{color:var(--g)}.rise-neutral{color:var(--y)}.rise-weak{color:#d5aa70}.rise-bad{color:var(--r)}
+.buyprice{font-size:19px;font-weight:850;color:var(--g);letter-spacing:.2px}.win{font-size:17px;font-weight:800}
 table{width:100%;border-collapse:collapse;font-size:12px}td,th{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line)}th{color:var(--mut);font-weight:500}
 .health{display:flex;gap:7px;flex-wrap:wrap}.health span{font-size:11px;padding:4px 7px;border-radius:999px;background:#20252c}.dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;background:var(--g)}.dot.off{background:var(--r)}
-.empty{background:var(--card2);padding:25px;border-radius:9px;text-align:center;color:var(--mut)}details{margin-top:10px}summary{cursor:pointer;color:var(--mut);font-size:12px}
-input{background:#111419;color:white;border:1px solid var(--line);border-radius:7px;padding:7px;width:100%}.journal{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:7px}
+.empty{background:var(--card2);padding:22px;border-radius:9px;text-align:center;color:var(--mut)}details{margin-top:10px}summary{cursor:pointer;color:var(--mut);font-size:12px}
+input{background:#111419;color:white;border:1px solid var(--line);border-radius:7px;padding:8px;width:100%;outline:none}.journal{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:7px}
 .rank{display:inline-flex;width:22px;height:22px;border-radius:50%;align-items:center;justify-content:center;background:#252b34;color:#fff;font-weight:800;font-size:11px;margin-right:7px}
-@media(max-width:960px){.grid,.grid2{grid-template-columns:1fr}.metrics{grid-template-columns:1fr 1fr}.stockrow{grid-template-columns:1fr 1fr}.top,.banner{align-items:flex-start;flex-direction:column}.journal{grid-template-columns:1fr 1fr}}
+.watch-tools{display:grid;grid-template-columns:1fr auto;gap:7px;position:relative;margin-bottom:10px}.searchbox{position:absolute;z-index:8;left:0;right:62px;top:40px;background:#15191f;border:1px solid var(--line);border-radius:9px;max-height:250px;overflow:auto;box-shadow:0 12px 30px #0008;display:none}
+.search-item{padding:8px 10px;border-bottom:1px solid var(--line);cursor:pointer}.search-item:hover{background:#20252d}
+.watch-item{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;background:var(--card2);border:1px solid var(--line);border-radius:9px;padding:10px;margin-bottom:7px}
+.live{font-size:11px;color:var(--b)}.speed{display:inline-block;padding:3px 7px;border-radius:999px;background:#1c2a3e;color:#9fbdff;font-size:11px}
+.actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.journal-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;background:var(--card2);border:1px solid var(--line);border-radius:9px;padding:10px;margin-bottom:7px}
+@media(max-width:960px){.grid,.grid2{grid-template-columns:1fr}.metrics{grid-template-columns:1fr 1fr}.stockrow{grid-template-columns:1fr 1fr}.top,.banner{align-items:flex-start;flex-direction:column}.journal{grid-template-columns:1fr 1fr}.watch-tools{grid-template-columns:1fr auto}}
 </style></head><body><div class="wrap">
-<div class="top"><div><h1>🎯 短线机会工作台 V1.4</h1><div class="sub">1～5个交易日｜最多5只机会｜明确买入价格｜历史信号胜率</div></div><button onclick="loadData()">刷新最新结果</button></div>
+<div class="top">
+ <div><h1>🎯 短线机会工作台 V1.6</h1><div class="sub">模型约5分钟｜行情约15秒｜最多5只机会｜新增买入后待涨判断</div></div>
+ <div class="actions"><span class="speed" id="liveClock">行情刷新：—</span><button onclick="loadData(true)">刷新模型结果</button></div>
+</div>
 <div class="panel banner"><div id="status">读取最新扫描结果…</div><div id="health" class="health"></div></div>
+
 <div class="grid">
-<section class="panel"><h2>今日机会（最多5只）</h2><div id="opps" class="cards"><div class="empty">读取中…</div></div><div class="tiny" style="margin-top:10px">胜率为该股历史同类技术结构回测：未来5个交易日内 +3.5% 目标先于 -2.5% 止损触发的比例，不代表未来必然概率。</div></section>
-<section class="panel"><h2>市场状态</h2><div class="metrics">
-<div class="metric"><div id="mScore" class="big">—</div><div class="mut">环境分</div></div><div class="metric"><div id="mState" class="big">—</div><div class="mut">状态</div></div><div class="metric"><div id="mUp" class="big">—</div><div class="mut">上涨占比</div></div><div class="metric"><div id="mMed" class="big">—</div><div class="mut">涨跌中位</div></div>
-</div><h2 style="margin-top:15px">自选监控</h2><div id="watch" class="cards"></div></section>
+<section class="panel">
+ <h2>今日机会（最多5只）</h2>
+ <div id="opps" class="cards"><div class="empty">读取中…</div></div>
+ <div class="tiny" style="margin-top:10px">现价/涨跌每约15秒尝试更新；买入区、待涨指数、上涨率和目标胜率来自最近一次模型扫描。GitHub Actions 定时任务可能有延迟，因此两种更新时间会分开显示。</div>
+</section>
+<section class="panel">
+ <h2>市场状态</h2><div class="metrics">
+  <div class="metric"><div id="mScore" class="big">—</div><div class="mut">环境分</div></div>
+  <div class="metric"><div id="mState" class="big">—</div><div class="mut">状态</div></div>
+  <div class="metric"><div id="mUp" class="big">—</div><div class="mut">上涨占比</div></div>
+  <div class="metric"><div id="mMed" class="big">—</div><div class="mut">涨跌中位</div></div>
+ </div>
+ <h2 style="margin-top:15px">自选监控</h2>
+ <div class="watch-tools">
+  <input id="watchSearch" placeholder="输入股票代码或名称，如 600105 / 永鼎" autocomplete="off">
+  <button onclick="addFirstSearch()">添加</button>
+  <div id="searchBox" class="searchbox"></div>
+ </div>
+ <div id="watch"></div>
+</section>
 </div>
+
 <div class="grid2">
-<section class="panel"><h2>候选池 TOP20</h2><div style="max-height:520px;overflow:auto"><table><thead><tr><th>股票</th><th>分</th><th>买入区</th><th>5日胜率</th><th>涨跌</th><th>状态</th></tr></thead><tbody id="tbody"></tbody></table></div></section>
-<section class="panel"><h2>交易记录（只存在当前浏览器）</h2><div class="journal"><input id="jcode" placeholder="代码"><input id="jbuy" placeholder="买入价"><input id="jnote" placeholder="备注"><button onclick="addJournal()">记录</button></div><div id="journalList" style="margin-top:10px"></div>
-<details><summary>口径说明</summary><div class="mut">“买入区”是把后台技术触发条件转换成可执行价格区间；超过“不追价”价格后不建议追。历史胜率样本少于6次会标记样本不足。资金流接口不可用时显示“未接入”，不会伪造为0。</div></details></section></div>
-</div>
+<section class="panel"><h2>候选池 TOP20</h2><div style="max-height:520px;overflow:auto"><table><thead><tr><th>股票</th><th>分</th><th>待涨</th><th>5日上涨率</th><th>目标胜率</th><th>买入区</th><th>涨跌</th><th>状态</th></tr></thead><tbody id="tbody"></tbody></table></div></section>
+<section class="panel">
+ <div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><h2>交易记录（只存在当前浏览器）</h2><button class="danger mini" onclick="clearJournal()">清空全部</button></div>
+ <div class="journal"><input id="jcode" placeholder="代码"><input id="jbuy" placeholder="买入价"><input id="jnote" placeholder="备注"><button onclick="addJournal()">记录</button></div>
+ <div id="journalList" style="margin-top:10px"></div>
+ <details><summary>口径说明</summary><div class="mut">“待涨指数”是当前结构强弱评分，不是承诺概率；“5日上涨估计”来自历史相似样本上涨率并对小样本向50%收缩；目标胜率仍是先到+3.5%目标、而不是先到-2.5%止损的历史比例。网页端新增自选存于本机浏览器；未进入后台候选池的自选股，会先显示快速行情，评分/买点需等模型扫描覆盖或使用后续的按股即时分析模块。</div></details>
+</section>
+</div></div>
+
 <script>
+let DATA=null, SYMBOLS=[], LIVE={};
+const $=id=>document.getElementById(id);
 const money=x=>x===null||x===undefined?'未接入':`${x>=0?'+':''}${x}亿`;
 const winText=bt=>!bt||bt.win_rate_5d===null?'样本不足':`${bt.win_rate_5d}%`;
 const confText=bt=>bt?`${bt.sample_size||0}次｜${bt.confidence||'—'}`:'0次';
-function stockCard(x,compact=false,rank=null){
- const sc=x.score>=80?'good':(x.score>=70?'warn':'bad'); const tc=x.status==='进入买点区'?'tag':'tag wait'; const f=x.fund_flow||{}; const bp=x.buy_plan||{}; const bt=x.backtest||{};
+
+function currentQuote(x){
+ const q=LIVE[x.code];
+ return q ? {...x,price:q.price,pct:q.pct,amount_yi:q.amount_yi??x.amount_yi} : x;
+}
+function dynamicBuyState(x){
+ const bp=x.buy_plan||{}, px=Number(x.price);
+ if(!Number.isFinite(px)||bp.buy_low==null) return bp.state||x.status;
+ if(px>=bp.buy_low && px<=bp.buy_high) return '进入买点区';
+ if(px<bp.buy_low) return '等待到价';
+ if(px<=bp.no_chase) return '价格偏高，等回踩';
+ return '超过追价线，不追';
+}
+function stockCard(raw,rank=null){
+ const x=currentQuote(raw), bp=x.buy_plan||{}, bt=x.backtest||{}, f=x.fund_flow||{}, rs=x.rise_signal||{};
+ const sc=x.score>=80?'good':(x.score>=70?'warn':'bad');
+ const state=dynamicBuyState(x); const tc=state==='进入买点区'?'tag':'tag wait';
+ const riseTone='rise-'+(rs.tone||'neutral');
  let chips=(x.reasons||[]).map(s=>`<span class="chip">${s}</span>`).join('')+(x.warnings||[]).map(s=>`<span class="chip w">${s}</span>`).join('');
  return `<div class="stock"><div class="stockrow">
- <div><div class="name">${rank?`<span class="rank">${rank}</span>`:''}${x.name}</div><div class="mut">${x.code} ｜ 现价 ${x.price} ｜ <span class="${x.pct>=0?'good':'bad'}">${x.pct>=0?'+':''}${x.pct}%</span></div></div>
+ <div><div class="name">${rank?`<span class="rank">${rank}</span>`:''}${x.name}</div><div class="mut">${x.code} ｜ 现价 <b data-price="${x.code}">${x.price}</b> ｜ <span data-pct="${x.code}" class="${x.pct>=0?'good':'bad'}">${x.pct>=0?'+':''}${x.pct}%</span></div></div>
  <div><div class="score ${sc}">${x.score}</div><div class="mut">综合分</div></div>
- <div class="buybox"><div class="tiny">计划买入区</div><div class="buyprice">${bp.buy_low??'—'} ～ ${bp.buy_high??'—'}</div><div class="tiny">理想价 ${bp.ideal_buy??'—'} ｜ 不追价 ＞ ${bp.no_chase??'—'}<br>止损 ${x.stop} ｜ 目标 ${x.target1} / ${x.target2}</div></div>
- <div><span class="${tc}">${bp.state||x.status}</span><div class="kv" style="margin-top:5px"><span class="win ${bt.win_rate_5d>=55?'good':(bt.win_rate_5d===null?'warn':'')}">${winText(bt)}</span> <span class="tiny">5日胜率</span><br><span class="tiny">${confText(bt)}｜5日均收益 ${bt.avg_5d_return??'—'}%</span><br>资金 <b>${f.available?money(f.main_yi):'未接入'}</b></div></div>
- </div>${compact?'':`<div class="chips">${chips||'<span class="mut">暂无额外信号</span>'}</div><details><summary>查看后台技术触发条件</summary><div class="kv">技术触发价 <b>${x.trigger}</b> ｜ 量比 <b>${x.volume_ratio}</b> ｜ 盈亏比 <b>${x.rr1}</b><br>历史1日胜率 ${bt.win_rate_1d??'—'}% ｜ 3日 ${bt.win_rate_3d??'—'}% ｜ 5日 ${bt.win_rate_5d??'—'}%</div></details>`}</div>`;
+ <div class="buybox"><div class="tiny">计划买入区</div><div class="buyprice">${bp.buy_low??'—'} ～ ${bp.buy_high??'—'}</div><div class="tiny">理想价 ${bp.ideal_buy??'—'} ｜ 不追 ＞ ${bp.no_chase??'—'}<br>止损 ${x.stop} ｜ 目标 ${x.target1} / ${x.target2}</div></div>
+ <div class="risebox">
+   <div class="risehead"><span class="riselevel ${riseTone}">${rs.level||'待涨待评估'}</span><span class="riseidx ${riseTone}">${rs.index??'—'}</span></div>
+   <div class="tiny">待涨指数 /100</div>
+   <div class="kv" style="margin-top:5px">5日上涨估计 <b>${rs.estimated_up_5d??'—'}%</b> ｜ 目标胜率 <b>${rs.target_win_5d??'—'}%</b><br>平均5日 <b class="${(rs.avg_5d_return??0)>=0?'good':'bad'}">${rs.avg_5d_return??'—'}%</b> ｜ 平均上冲 <b>${rs.avg_max_up_5d??'—'}%</b></div>
+ </div>
+ <div><span class="${tc}">${state}</span><div class="kv" style="margin-top:5px">${rs.confidence||bt.confidence||'样本不足'}｜${rs.sample_size??bt.sample_size??0}次<br><span class="tiny">${rs.conclusion||''}</span><br>资金 <b>${f.available?money(f.main_yi):'未接入'}</b></div></div>
+ </div><div class="chips">${chips||'<span class="mut">暂无额外信号</span>'}</div>
+ <details><summary>查看统计与后台条件</summary><div class="kv">
+ 技术触发价 <b>${x.trigger}</b> ｜ 量比 <b>${x.volume_ratio}</b> ｜ 盈亏比 <b>${x.rr1}</b><br>
+ 历史上涨率：1日 ${bt.up_rate_1d??'—'}% ｜ 3日 ${bt.up_rate_3d??'—'}% ｜ 5日 ${bt.up_rate_5d??'—'}%<br>
+ 目标胜率：1日 ${bt.win_rate_1d??'—'}% ｜ 3日 ${bt.win_rate_3d??'—'}% ｜ 5日 ${bt.win_rate_5d??'—'}%<br>
+ 平均收益：1日 ${bt.avg_1d_return??'—'}% ｜ 3日 ${bt.avg_3d_return??'—'}% ｜ 5日 ${bt.avg_5d_return??'—'}%<br>
+ 5日平均最大上冲 ${bt.avg_max_up_5d??'—'}% ｜ 平均最大回撤 ${bt.avg_max_drawdown_5d??'—'}%
+ </div></details></div>`;
 }
-async function loadData(){
+function analysisMap(){
+ const m={};
+ [...(DATA?.opportunities||[]),...(DATA?.watchlist||[]),...(DATA?.candidates||[])].forEach(x=>m[x.code]=x);
+ return m;
+}
+function getWatchCodes(){
+ let a=JSON.parse(localStorage.getItem('watchCodes')||'null');
+ if(!Array.isArray(a)){a=['600105','000021'];localStorage.setItem('watchCodes',JSON.stringify(a))}
+ return a;
+}
+function setWatchCodes(a){localStorage.setItem('watchCodes',JSON.stringify([...new Set(a)]));renderWatch();refreshLiveQuotes()}
+function addWatch(code){
+ if(!code)return; let a=getWatchCodes(); if(!a.includes(code))a.unshift(code); setWatchCodes(a); $('watchSearch').value=''; $('searchBox').style.display='none';
+}
+function removeWatch(code){setWatchCodes(getWatchCodes().filter(x=>x!==code))}
+function searchSymbols(){
+ const q=$('watchSearch').value.trim().toLowerCase(), box=$('searchBox');
+ if(!q){box.style.display='none';return}
+ const arr=SYMBOLS.filter(x=>x.code.includes(q)||String(x.name).toLowerCase().includes(q)).slice(0,10);
+ box.innerHTML=arr.length?arr.map(x=>`<div class="search-item" onclick="addWatch('${x.code}')"><b>${x.name}</b>　<span class="mut">${x.code}</span></div>`).join(''):'<div class="search-item mut">没有找到</div>';
+ box.style.display='block';
+}
+function addFirstSearch(){
+ const q=$('watchSearch').value.trim().toLowerCase();
+ const x=SYMBOLS.find(x=>x.code===q)||SYMBOLS.find(x=>x.code.includes(q)||String(x.name).toLowerCase().includes(q));
+ if(x)addWatch(x.code);
+}
+function renderWatch(){
+ const codes=getWatchCodes(), amap=analysisMap(), snap=DATA?.quote_snapshot||{};
+ $('watch').innerHTML=codes.length?codes.map(code=>{
+   let x=amap[code], q=LIVE[code]||snap[code], s=SYMBOLS.find(z=>z.code===code);
+   if(x){
+     x=currentQuote(x);
+     const rs=x.rise_signal||{};
+     return `<div class="watch-item"><div><b>${x.name}</b> <span class="mut">${code}</span><br><span class="${x.pct>=0?'good':'bad'}">${x.price}　${x.pct>=0?'+':''}${x.pct}%</span>　<span class="tiny">评分 ${x.score}｜<b class="rise-${rs.tone||'neutral'}">${rs.level||'待评估'} ${rs.index??'—'}</b>｜5日上涨估计 ${rs.estimated_up_5d??'—'}%｜买入区 ${(x.buy_plan||{}).buy_low??'—'}～${(x.buy_plan||{}).buy_high??'—'}｜${dynamicBuyState(x)}</span></div><button class="danger mini" onclick="removeWatch('${code}')">删除</button></div>`;
+   }
+   if(q){
+     return `<div class="watch-item"><div><b>${q.name||s?.name||code}</b> <span class="mut">${code}</span><br><span class="${q.pct>=0?'good':'bad'}">${q.price}　${q.pct>=0?'+':''}${q.pct}%</span>　<span class="tiny">快速行情｜尚未进入后台深度分析池</span></div><button class="danger mini" onclick="removeWatch('${code}')">删除</button></div>`;
+   }
+   return `<div class="watch-item"><div><b>${s?.name||code}</b> <span class="mut">${code}</span><br><span class="tiny">等待行情</span></div><button class="danger mini" onclick="removeWatch('${code}')">删除</button></div>`;
+ }).join(''):'<div class="empty">暂无自选。上方搜索股票后添加。</div>';
+}
+function renderMain(){
+ if(!DATA)return;
+ const d=DATA;
+ $('status').innerHTML=`V${d.version||'—'}　模型扫描 <b>${d.updated_at}</b>　｜　股票池 ${d.market.universe} 只`;
+ $('mScore').textContent=d.market.score+'/100'; $('mState').textContent=d.market.state||'—'; $('mUp').textContent=d.market.up_ratio+'%'; $('mMed').textContent=(d.market.median_pct>=0?'+':'')+d.market.median_pct+'%';
+ const h=d.source_health||{}; $('health').innerHTML=Object.values(h).map(x=>`<span><i class="dot ${x.ok?'':'off'}"></i>${x.role}</span>`).join('');
+ $('opps').innerHTML=(d.opportunities||[]).length?d.opportunities.map((x,i)=>stockCard(x,i+1)).join(''):'<div class="empty">没有达到阈值的机会。今天可以不做。</div>';
+ $('tbody').innerHTML=(d.candidates||[]).map(raw=>{const x=currentQuote(raw),bp=x.buy_plan||{},bt=x.backtest||{},rs=x.rise_signal||{};return `<tr><td><b>${x.name}</b><br><span class="mut">${x.code}</span></td><td>${x.score}</td><td><b class="rise-${rs.tone||'neutral'}">${rs.level||'—'} ${rs.index??'—'}</b></td><td>${rs.estimated_up_5d??bt.up_rate_5d??'—'}%<br><span class="tiny">${bt.sample_size||0}次</span></td><td>${rs.target_win_5d??bt.win_rate_5d??'—'}%</td><td>${bp.buy_low??'—'}～${bp.buy_high??'—'}</td><td class="${x.pct>=0?'good':'bad'}">${x.pct>=0?'+':''}${x.pct}%</td><td>${dynamicBuyState(x)}</td></tr>`}).join('');
+ renderWatch();
+}
+async function loadData(manual=false){
  try{
-  const r=await fetch('./data/latest.json?t='+Date.now(),{cache:'no-store'}); if(!r.ok) throw Error('数据文件未生成'); const d=await r.json();
-  status.innerHTML=`V${d.version||'—'}　最新扫描 <b>${d.updated_at}</b>　｜　股票池 ${d.market.universe} 只`;
-  mScore.textContent=d.market.score+'/100';mState.textContent=d.market.state||'—';mUp.textContent=d.market.up_ratio+'%';mMed.textContent=(d.market.median_pct>=0?'+':'')+d.market.median_pct+'%';
-  const h=d.source_health||{}; health.innerHTML=Object.values(h).map(x=>`<span><i class="dot ${x.ok?'':'off'}"></i>${x.role}</span>`).join('');
-  opps.innerHTML=(d.opportunities||[]).length?d.opportunities.map((x,i)=>stockCard(x,false,i+1)).join(''):'<div class="empty">没有达到阈值的机会。今天可以不做。</div>';
-  watch.innerHTML=(d.watchlist||[]).map(x=>stockCard(x,true)).join('')||'<div class="empty">暂无自选数据</div>';
-  tbody.innerHTML=(d.candidates||[]).map(x=>{const bp=x.buy_plan||{},bt=x.backtest||{};return `<tr><td><b>${x.name}</b><br><span class="mut">${x.code}</span></td><td>${x.score}</td><td>${bp.buy_low??'—'}～${bp.buy_high??'—'}</td><td>${winText(bt)}<br><span class="tiny">${bt.sample_size||0}次</span></td><td class="${x.pct>=0?'good':'bad'}">${x.pct>=0?'+':''}${x.pct}%</td><td>${bp.state||x.status}</td></tr>`}).join('');
- }catch(e){status.textContent='⚠️ '+e.message;opps.innerHTML='<div class="empty">等待后台扫描数据</div>'}
+   const [r,s]=await Promise.all([
+     fetch('./data/latest.json?t='+Date.now(),{cache:'no-store'}),
+     fetch('./data/symbols.json?t='+Date.now(),{cache:'no-store'}).catch(()=>null)
+   ]);
+   if(!r.ok)throw Error('数据文件未生成');
+   DATA=await r.json();
+   if(s&&s.ok)SYMBOLS=await s.json(); else SYMBOLS=Object.values(DATA.quote_snapshot||{}).map(x=>({code:x.code,name:x.name}));
+   renderMain(); refreshLiveQuotes();
+ }catch(e){$('status').textContent='⚠️ '+e.message;$('opps').innerHTML='<div class="empty">等待后台扫描数据</div>'}
 }
-function loadJournal(){let a=JSON.parse(localStorage.getItem('tradeJournal')||'[]');journalList.innerHTML=a.length?a.map((x,i)=>`<div class="stock"><b>${x.code}</b>　买入 ${x.buy}　<span class="mut">${x.note||''}　${x.time}</span> <button style="float:right;padding:3px 7px;background:#343941" onclick="delJournal(${i})">删</button></div>`).join(''):'<div class="empty">暂无记录</div>'}
-function addJournal(){let a=JSON.parse(localStorage.getItem('tradeJournal')||'[]');a.unshift({code:jcode.value,buy:jbuy.value,note:jnote.value,time:new Date().toLocaleString()});localStorage.setItem('tradeJournal',JSON.stringify(a));jcode.value=jbuy.value=jnote.value='';loadJournal()}
+function tencentScript(codes){
+ return new Promise(resolve=>{
+   if(!codes.length){resolve();return}
+   const vars=codes.map(c=>('6'===c[0]?'sh':'sz')+c);
+   const script=document.createElement('script');
+   script.src='https://qt.gtimg.cn/q='+vars.join(',');
+   script.onload=()=>{try{
+     vars.forEach(v=>{
+       const raw=window['v_'+v]; if(!raw)return; const a=raw.split('~'); if(a.length<38)return;
+       const code=v.slice(2), price=Number(a[3]), prev=Number(a[4]), pct=prev?((price-prev)/prev*100):0, amount=Number(a[37]||0);
+       LIVE[code]={code,name:a[1],price:Number(price.toFixed(2)),pct:Number(pct.toFixed(2)),amount_yi:Number(amount.toFixed(2))};
+       try{delete window['v_'+v]}catch(e){}
+     });
+   }finally{script.remove();resolve()}};
+   script.onerror=()=>{script.remove();resolve()};
+   document.body.appendChild(script);
+ });
+}
+async function refreshLiveQuotes(){
+ if(!DATA)return;
+ const codes=[...new Set([...(DATA.opportunities||[]).map(x=>x.code),...(DATA.candidates||[]).slice(0,20).map(x=>x.code),...getWatchCodes()])];
+ for(let i=0;i<codes.length;i+=60)await tencentScript(codes.slice(i,i+60));
+ $('liveClock').textContent='行情刷新：'+new Date().toLocaleTimeString();
+ renderMain();
+}
+$('watchSearch').addEventListener('input',searchSymbols);
+$('watchSearch').addEventListener('keydown',e=>{if(e.key==='Enter')addFirstSearch()});
+document.addEventListener('click',e=>{if(!e.target.closest('.watch-tools'))$('searchBox').style.display='none'});
+
+function loadJournal(){
+ const a=JSON.parse(localStorage.getItem('tradeJournal')||'[]');
+ $('journalList').innerHTML=a.length?a.map((x,i)=>`<div class="journal-row"><div><b>${x.code}</b>　买入 ${x.buy}<br><span class="mut">${x.note||''}　${x.time}</span></div><button class="danger mini" onclick="delJournal(${i})">删除</button></div>`).join(''):'<div class="empty">暂无记录</div>';
+}
+function addJournal(){
+ if(!$('jcode').value.trim()||!$('jbuy').value.trim())return;
+ let a=JSON.parse(localStorage.getItem('tradeJournal')||'[]');
+ a.unshift({code:$('jcode').value.trim(),buy:$('jbuy').value.trim(),note:$('jnote').value.trim(),time:new Date().toLocaleString()});
+ localStorage.setItem('tradeJournal',JSON.stringify(a)); $('jcode').value=$('jbuy').value=$('jnote').value=''; loadJournal();
+}
 function delJournal(i){let a=JSON.parse(localStorage.getItem('tradeJournal')||'[]');a.splice(i,1);localStorage.setItem('tradeJournal',JSON.stringify(a));loadJournal()}
-loadData();loadJournal();
+function clearJournal(){if(confirm('确定清空全部交易记录？此操作只影响当前浏览器，且不可恢复。')){localStorage.removeItem('tradeJournal');loadJournal()}}
+
+loadData(); loadJournal();
+setInterval(refreshLiveQuotes,15000);
+setInterval(()=>loadData(false),60000);
 </script></body></html>

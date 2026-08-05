@@ -5,7 +5,7 @@ import requests
 import baostock as bs
 
 CN = timezone(timedelta(hours=8))
-WATCHLIST = ["600105", "000021"]
+WATCHLIST = ["600105", "000021"]  # 默认自选；网页端还可本地自由添加/删除
 S = requests.Session()
 S.headers.update({
     "User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131 Safari/537.36",
@@ -99,7 +99,7 @@ def fetch_quotes(universe):
         q["code"]=c; q["bs_code"]=("sh."+c if c.startswith("6") else "sz."+c); q["name"]=q.get("name") or name_map.get(c,c); quotes.append(q)
     return quotes,{"sina_count":len(sina),"tencent_fallback_count":len(tencent),"merged_count":len(merged)}
 
-def history(bs_code, days=260):
+def history(bs_code, days=220):
     fields="date,open,high,low,close,volume,amount,turn,pctChg"
     start=(datetime.now(CN)-timedelta(days=days)).strftime("%Y-%m-%d")
     rs=bs.query_history_k_data_plus(bs_code,fields,start_date=start,end_date=datetime.now(CN).strftime("%Y-%m-%d"),frequency="d",adjustflag="2")
@@ -139,44 +139,168 @@ def technical(h):
 
 def backtest_stats(h):
     """
-    历史同类技术结构回测。
-    胜：信号出现后 1/3/5 个交易日内，+3.5% 目标先于 -2.5% 止损触发。
-    若同一天同时触发目标和止损，按止损处理（保守口径）。
-    这不是未来概率，只是同一只股票历史上的相似结构统计。
+    历史相似技术结构统计，分成两套口径：
+    1) 上涨率：信号后第1/3/5个交易日收盘价高于信号日收盘价。
+    2) 目标胜率：未来1/3/5日内，+3.5%目标先于-2.5%止损触发。
+       若同一天同时触发目标和止损，按止损处理（保守口径）。
+    同时统计未来5日平均收益、平均最大上冲和平均最大回撤。
     """
-    if len(h)<40:
-        return {"sample_size":0,"win_rate_1d":None,"win_rate_3d":None,"win_rate_5d":None,"avg_5d_return":None,"confidence":"样本不足"}
+    empty = {
+        "sample_size":0,
+        "up_rate_1d":None,"up_rate_3d":None,"up_rate_5d":None,
+        "win_rate_1d":None,"win_rate_3d":None,"win_rate_5d":None,
+        "avg_1d_return":None,"avg_3d_return":None,"avg_5d_return":None,
+        "avg_max_up_5d":None,"avg_max_drawdown_5d":None,
+        "confidence":"样本不足"
+    }
+    if len(h) < 40:
+        return empty
+
     samples=[]
-    # 最后5根留给未来窗口，不拿当前未完成日作为历史样本
     for i in range(20, len(h)-5):
         prefix=h[:i+1]
         t=technical(prefix)
         day=h[i]
-        # 与当前工作台筛选方向一致：趋势偏强、量能不过度、位置不过高、当日不追涨
+
+        # 与当前筛选方向保持一致
         if t["trend"] < 65: continue
         if not (30 <= t["volume"] <= 100): continue
         if not (20 <= t["position"] <= 88): continue
         if not (-5 <= day.get("pct",0) <= 5): continue
-        entry=day["c"]; target=entry*1.035; stop=entry*0.975
-        results={}
+
+        entry=day["c"]
+        target=entry*1.035
+        stop=entry*0.975
+
+        target_results={}
         for horizon in (1,3,5):
             outcome=False
             for j in range(i+1, min(i+1+horizon, len(h))):
                 bar=h[j]
                 hit_stop=bar["l"] <= stop
                 hit_target=bar["h"] >= target
-                if hit_stop: outcome=False; break
-                if hit_target: outcome=True; break
-            results[horizon]=outcome
-        ret5=(h[min(i+5,len(h)-1)]["c"]-entry)/entry*100
-        samples.append((results,ret5))
+                if hit_stop:
+                    outcome=False
+                    break
+                if hit_target:
+                    outcome=True
+                    break
+            target_results[horizon]=outcome
+
+        def close_ret(k):
+            close=h[min(i+k,len(h)-1)]["c"]
+            return (close-entry)/entry*100
+
+        r1=close_ret(1)
+        r3=close_ret(3)
+        r5=close_ret(5)
+
+        future=h[i+1:min(i+6,len(h))]
+        max_up=(max(x["h"] for x in future)-entry)/entry*100 if future else 0
+        max_dd=(min(x["l"] for x in future)-entry)/entry*100 if future else 0
+
+        samples.append({
+            "target":target_results,
+            "r1":r1,"r3":r3,"r5":r5,
+            "max_up":max_up,"max_dd":max_dd
+        })
+
     n=len(samples)
     if n==0:
-        return {"sample_size":0,"win_rate_1d":None,"win_rate_3d":None,"win_rate_5d":None,"avg_5d_return":None,"confidence":"样本不足"}
-    rate=lambda k: round(sum(1 for r,_ in samples if r[k])/n*100,1)
+        return empty
+
+    pct=lambda num: round(num/n*100,1)
+    target_rate=lambda k: pct(sum(1 for x in samples if x["target"][k]))
+    up_rate=lambda k: pct(sum(1 for x in samples if x[f"r{k}"] > 0))
+    avg=lambda key: round(sum(x[key] for x in samples)/n,2)
+
     conf="较高" if n>=20 else ("中等" if n>=10 else ("较低" if n>=6 else "样本不足"))
-    return {"sample_size":n,"win_rate_1d":rate(1),"win_rate_3d":rate(3),"win_rate_5d":rate(5),
-            "avg_5d_return":round(sum(x for _,x in samples)/n,2),"confidence":conf}
+
+    return {
+        "sample_size":n,
+        "up_rate_1d":up_rate(1),"up_rate_3d":up_rate(3),"up_rate_5d":up_rate(5),
+        "win_rate_1d":target_rate(1),"win_rate_3d":target_rate(3),"win_rate_5d":target_rate(5),
+        "avg_1d_return":avg("r1"),"avg_3d_return":avg("r3"),"avg_5d_return":avg("r5"),
+        "avg_max_up_5d":avg("max_up"),"avg_max_drawdown_5d":avg("max_dd"),
+        "confidence":conf
+    }
+
+def make_rise_signal(score, bt, market_score, flow_score, buy_state):
+    """
+    当前“待涨指数”不是承诺概率，而是把：
+    当前技术评分 + 历史上涨率 + 历史目标胜率 + 市场环境 + 资金评分
+    合成一个 0~100 的强弱指示。
+
+    历史样本会做收缩：样本越少，越向50%中性值靠拢，防止小样本虚高。
+    """
+    n=bt.get("sample_size",0) or 0
+    confidence=min(n/20,1)
+
+    raw_up=bt.get("up_rate_5d")
+    raw_win=bt.get("win_rate_5d")
+    raw_up=50 if raw_up is None else raw_up
+    raw_win=50 if raw_win is None else raw_win
+
+    shrunk_up=50+(raw_up-50)*confidence
+    shrunk_win=50+(raw_win-50)*confidence
+
+    idx = (
+        score*0.35 +
+        shrunk_up*0.27 +
+        shrunk_win*0.13 +
+        market_score*0.18 +
+        flow_score*0.07
+    )
+
+    if buy_state=="进入买点区":
+        idx += 2
+    idx=round(clamp(idx),1)
+
+    if idx>=72:
+        level="待涨强"
+        tone="strong"
+    elif idx>=64:
+        level="偏强"
+        tone="good"
+    elif idx>=56:
+        level="中性偏多"
+        tone="neutral"
+    elif idx>=48:
+        level="一般"
+        tone="weak"
+    else:
+        level="偏弱"
+        tone="bad"
+
+    # “待涨估计”只基于历史5日上涨率做小样本收缩，不把当前评分硬伪装成概率。
+    estimated_up=round(shrunk_up,1)
+
+    if buy_state=="进入买点区" and idx>=72:
+        conclusion="买点已到，且历史/当前结构共振较强"
+    elif buy_state=="进入买点区" and idx>=64:
+        conclusion="买点已到，但上涨优势属于中等"
+    elif idx>=72:
+        conclusion="待涨结构较强，但价格尚未进入理想买点"
+    elif idx>=64:
+        conclusion="偏多观察，等待更好的价格确认"
+    elif idx>=56:
+        conclusion="有上涨倾向，但优势不够明显"
+    else:
+        conclusion="上涨优势不足，不宜因为出现买点就强行介入"
+
+    return {
+        "index":idx,
+        "level":level,
+        "tone":tone,
+        "estimated_up_5d":estimated_up,
+        "target_win_5d":bt.get("win_rate_5d"),
+        "avg_5d_return":bt.get("avg_5d_return"),
+        "avg_max_up_5d":bt.get("avg_max_up_5d"),
+        "avg_max_drawdown_5d":bt.get("avg_max_drawdown_5d"),
+        "sample_size":n,
+        "confidence":bt.get("confidence","样本不足"),
+        "conclusion":conclusion
+    }
 
 def make_buy_plan(q,t,trig,stop):
     # 把技术触发价翻译成更直观的“可下单价格区间”
@@ -216,7 +340,7 @@ def try_eastmoney_flow(code):
     except: pass
     return {"available":False,"main_yi":None,"large_yi":None,"super_yi":None,"positive_2":None}
 
-def analyze(q,include_flow=False):
+def analyze(q,market_score=50,include_flow=False):
     h=enrich_today(history(q["bs_code"]),q)
     t=technical(h)
     liquidity=clamp(45+math.log10(max(q["amount"]/1e8,1))*28)
@@ -232,6 +356,7 @@ def analyze(q,include_flow=False):
     stop=min(trig*.975,support)
     buy_plan=make_buy_plan(q,t,trig,stop)
     bt=backtest_stats(h)
+    rise=make_rise_signal(score,bt,market_score,flow_score,buy_plan["state"])
     rr1=(trig*1.035-trig)/max(trig-stop,.01)
     reasons=list(t["reasons"]); warnings=list(t["warnings"])
     if q["pct"]>4: warnings.append("当日涨幅偏高，禁止追价")
@@ -252,6 +377,7 @@ def analyze(q,include_flow=False):
         "trigger":round(trig,2),
         "buy_plan":buy_plan,
         "backtest":bt,
+        "rise_signal":rise,
         "stop":round(stop,2),"target1":round(trig*1.035,2),"target2":round(trig*1.06,2),
         "rr1":round(rr1,2),"status":status,"reasons":reasons[:5],"warnings":warnings[:4],"fund_flow":flow
     }
@@ -267,14 +393,23 @@ def main():
         pre=[x for x in quotes if 5<=x["price"]<=30 and x["amount"]>=3e8 and -7.5<=x["pct"]<=5]
         for x in pre:
             liq=clamp(40+math.log10(max(x["amount"]/1e8,1))*28); chase=max(0,100-max(x["pct"],0)*12); x["_pre"]=liq*.55+chase*.45
-        pre=sorted(pre,key=lambda z:z["_pre"],reverse=True)[:35]; candidates=[]
-        for x in pre: candidates.append(analyze(x,include_flow=(len(candidates)<12)))
-        candidates=sorted(candidates,key=lambda z:z["score"],reverse=True)
-        watch=[analyze(by_code[c],include_flow=True) for c in WATCHLIST if c in by_code]
+        pre=sorted(pre,key=lambda z:z["_pre"],reverse=True)[:25]; candidates=[]
+        for x in pre: candidates.append(analyze(x,market_score=market_score,include_flow=(len(candidates)<8)))
+        candidates=sorted(candidates,key=lambda z:(z.get("rise_signal",{}).get("index",0),z["score"]),reverse=True)
+        watch=[analyze(by_code[c],market_score=market_score,include_flow=True) for c in WATCHLIST if c in by_code]
         source_health={"baostock":{"ok":len(universe)>2000,"count":len(universe),"role":"股票池/历史日K"},"quotes":{"ok":len(quotes)>2000,"count":len(quotes),"role":"实时行情","detail":health},"eastmoney_flow":{"ok":any(x["fund_flow"]["available"] for x in watch+candidates[:5]),"role":"资金流（可选增强）"}}
         now=datetime.now(CN).strftime("%Y-%m-%d %H:%M:%S")
-        data={"version":"1.4","updated_at":now,"market":{"score":market_score,"state":market_state,"up_ratio":round(up,1),"median_pct":round(med,2),"universe":len(quotes)},"opportunities":[x for x in candidates if x["status"]!="放弃"][:5],"watchlist":watch,"candidates":candidates[:20],"source_health":source_health,"rules":{"price":"5-30元","amount":"≥3亿元","day_pct":"-7.5%~+5%","excluded":"科创/创业/北交/ST/退市","holding":"1-5个交易日"}}
-        Path("data").mkdir(exist_ok=True); Path("data/latest.json").write_text(json.dumps(data,ensure_ascii=False,indent=2),encoding="utf-8")
+        # 轻量股票索引：用于网页端“代码/名称搜索添加自选”
+        symbols=[{"code":x["code"],"name":x["name"]} for x in quotes]
+        quote_snapshot={x["code"]:{
+            "code":x["code"],"name":x["name"],"price":round(x["price"],2),
+            "pct":round(x["pct"],2),"amount_yi":round(x["amount"]/1e8,2)
+        } for x in quotes}
+
+        data={"version":"1.6","updated_at":now,"market":{"score":market_score,"state":market_state,"up_ratio":round(up,1),"median_pct":round(med,2),"universe":len(quotes)},"opportunities":[x for x in candidates if x["status"]!="放弃" and x.get("rise_signal",{}).get("index",0)>=56][:5],"watchlist":watch,"candidates":candidates[:20],"source_health":source_health,"quote_snapshot":quote_snapshot,"rules":{"price":"5-30元","amount":"≥3亿元","day_pct":"-7.5%~+5%","excluded":"科创/创业/北交/ST/退市","holding":"1-5个交易日"}}
+        Path("data").mkdir(exist_ok=True)
+        Path("data/latest.json").write_text(json.dumps(data,ensure_ascii=False,separators=(",",":")),encoding="utf-8")
+        Path("data/symbols.json").write_text(json.dumps(symbols,ensure_ascii=False,separators=(",",":")),encoding="utf-8")
         print("OK",now,"quotes",len(quotes),"opps",len(data["opportunities"]),"watch",len(watch))
     finally: bs.logout()
 
