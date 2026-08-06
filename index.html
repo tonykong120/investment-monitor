@@ -1,6 +1,6 @@
 <!doctype html><html lang="zh-CN"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>短线机会工作台 V2.1</title>
+<title>短线机会工作台 V2.2</title>
 <style>
 :root{--bg:#0b0d10;--card:#14171c;--card2:#1a1e24;--line:#292f38;--txt:#f2f4f7;--mut:#9098a4;--g:#49d17d;--y:#efb64a;--r:#ef6965;--b:#79a1ff}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font:14px/1.55 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
@@ -32,11 +32,18 @@ input{background:#111419;color:white;border:1px solid var(--line);border-radius:
 .actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.journal-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;background:var(--card2);border:1px solid var(--line);border-radius:9px;padding:10px;margin-bottom:7px}
 .elastic{display:inline-block;padding:3px 7px;border-radius:999px;font-size:11px;font-weight:750}.elastic.high{background:#173c2a;color:#65e39a}.elastic.mid{background:#3a321d;color:#f0c36b}.elastic.low{background:#352323;color:#e69a96}
 .sector-list{display:grid;gap:7px}.sector-row{display:grid;grid-template-columns:1fr .65fr .55fr;gap:8px;align-items:center;background:var(--card2);border:1px solid var(--line);border-radius:8px;padding:9px 10px}.sector-name{font-weight:750}.sector-money{font-weight:800;text-align:right}.sector-pct{text-align:right}.explainbox{background:#111820;border:1px solid #273649;border-radius:9px;padding:10px;margin-bottom:10px}
-@media(max-width:960px){.grid,.grid2{grid-template-columns:1fr}.metrics{grid-template-columns:1fr 1fr}.stockrow{grid-template-columns:1fr 1fr}.top,.banner{align-items:flex-start;flex-direction:column}.watch-tools{grid-template-columns:1fr auto}}
+
+.livebox{border:1px solid #2d405b;background:#111926;border-radius:9px;padding:8px 10px;margin-top:8px}
+.livegrid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.livecard{background:var(--card2);border:1px solid var(--line);border-radius:9px;padding:10px}
+.livelevel{font-weight:850}.live-strong{color:var(--g)}.live-good{color:#7be69c}.live-watch{color:var(--y)}.live-risk{color:var(--r)}.live-cold{color:var(--mut)}
+.livebar{height:6px;background:#232a34;border-radius:999px;overflow:hidden;margin-top:7px}.livebar span{display:block;height:100%;background:linear-gradient(90deg,#79a1ff,#49d17d)}
+@media(max-width:960px){.grid,.grid2{grid-template-columns:1fr}.metrics{grid-template-columns:1fr 1fr}.livegrid{grid-template-columns:1fr 1fr}.stockrow{grid-template-columns:1fr}.top,.banner{align-items:flex-start;flex-direction:column}.watch-tools{grid-template-columns:1fr auto}.sector-row{grid-template-columns:1fr .8fr .7fr}}
+
 </style></head><body><div class="wrap">
 <div class="top">
- <div><h1>🎯 短线机会工作台 V2.1</h1><div class="sub">短波段模式｜高弹性优先｜实时行情层+模型扫描层｜行情约15秒</div></div>
- <div class="actions"><span class="speed" id="liveClock">行情刷新：—</span><button onclick="loadData(true)">刷新模型结果</button></div>
+ <div><h1>⚡ 短线机会工作台 V2.2</h1><div class="sub">短波段模式｜高弹性优先｜前端实时行情约10秒｜分钟异动雷达</div></div>
+ <div class="actions"><span class="speed" id="liveClock">实时行情：—</span><span class="speed" id="modelClock">模型：—</span><button onclick="loadData(true)">刷新模型结果</button></div>
 </div>
 <div class="panel banner"><div id="status">读取最新扫描结果…</div><div id="health" class="health"></div></div>
 <div class="panel" style="margin-bottom:12px;padding:10px 14px">
@@ -44,11 +51,20 @@ input{background:#111419;color:white;border:1px solid var(--line);border-radius:
   <div class="tiny" style="margin-top:4px">高弹性：历史ATR/振幅大，1～2天更容易拉开幅度；中弹性：适合2～5日；低弹性：短线效率偏低。🚫 近5日&gt;8%、连涨≥3天等仍过滤。</div>
 </div>
 
+<section class="panel" style="margin-bottom:12px">
+ <div style="display:flex;justify-content:space-between;gap:10px;align-items:center">
+  <h2>⚡ 分钟级异动雷达</h2>
+  <span class="tiny" id="liveRadarNote">浏览器记录中，打开页面后约1-5分钟逐步准确</span>
+ </div>
+ <div class="explainbox tiny">这部分不等后台模型，直接用浏览器实时行情计算：1/3/5分钟涨幅、5分钟成交额增量、日内振幅、急拉追高风险。适合盯自选和今日机会。</div>
+ <div id="liveRadar" class="livegrid"><div class="empty">等待实时行情采样…</div></div>
+</section>
+
 <div class="grid">
 <section class="panel">
  <h2>今日机会（最多5只）</h2>
  <div id="opps" class="cards"><div class="empty">读取中…</div></div>
- <div class="tiny" style="margin-top:10px">现价/涨跌约15秒刷新；买入区、待涨指数、弹性评分来自模型扫描。注意：行情和模型是两套时间，模型更新受后台任务影响。</div>
+ <div class="tiny" style="margin-top:10px">现价/涨跌约10秒刷新；买入区、待涨指数、弹性评分来自模型扫描。实时异动由浏览器连续记录价格/成交额计算，不等GitHub Actions。</div>
 </section>
 <section class="panel">
  <h2>市场状态</h2><div class="metrics">
@@ -86,7 +102,7 @@ input{background:#111419;color:white;border:1px solid var(--line);border-radius:
 </div></div>
 
 <script>
-let DATA=null, SYMBOLS=[], LIVE={}, SECTOR_TRIED_AT=0;
+let DATA=null, SYMBOLS=[], LIVE={}, LIVE_HISTORY={}, SECTOR_TRIED_AT=0;
 const $=id=>document.getElementById(id);
 const money=x=>x===null||x===undefined?'未接入':`${x>=0?'+':''}${x}亿`;
 const winText=bt=>!bt||bt.win_rate_5d===null?'样本不足':`${bt.win_rate_5d}%`;
@@ -94,7 +110,11 @@ const confText=bt=>bt?`${bt.sample_size||0}次｜${bt.confidence||'—'}`:'0次'
 
 function currentQuote(x){
  const q=LIVE[x.code];
- return q ? {...x,price:q.price,pct:q.pct,amount_yi:q.amount_yi??x.amount_yi} : x;
+ return q ? {...x,
+   price:q.price,pct:q.pct,amount_yi:q.amount_yi??x.amount_yi,
+   open:q.open??x.open,high:q.high??x.high,low:q.low??x.low,
+   amplitude_pct:q.amplitude_pct??x.amplitude_pct,quote_source:q.quote_source??x.quote_source
+ } : x;
 }
 function dynamicBuyState(x){
  const bp=x.buy_plan||{}, px=Number(x.price);
@@ -104,9 +124,100 @@ function dynamicBuyState(x){
  if(px<=bp.no_chase) return '价格偏高，等回踩';
  return '超过追价线，不追';
 }
+
+function loadLiveHistory(){
+ try{
+   const raw=localStorage.getItem('liveHistoryV22');
+   LIVE_HISTORY=raw?JSON.parse(raw):{};
+ }catch(e){LIVE_HISTORY={}}
+}
+function saveLiveHistory(){
+ try{
+   const slim={};
+   const now=Date.now();
+   Object.entries(LIVE_HISTORY).slice(0,90).forEach(([code,arr])=>{
+     slim[code]=(arr||[]).filter(x=>now-x.t<=45*60*1000).slice(-180);
+   });
+   localStorage.setItem('liveHistoryV22',JSON.stringify(slim));
+ }catch(e){}
+}
+function updateLiveHistory(codes){
+ const now=Date.now();
+ codes.forEach(code=>{
+   const q=LIVE[code]; if(!q||!q.price)return;
+   const arr=LIVE_HISTORY[code]||[];
+   const last=arr[arr.length-1];
+   if(!last || now-last.t>=8000){
+     arr.push({t:now,price:q.price,pct:q.pct,amount_yi:q.amount_yi??null});
+   }
+   LIVE_HISTORY[code]=arr.filter(x=>now-x.t<=45*60*1000).slice(-240);
+ });
+ saveLiveHistory();
+}
+function pointAgo(arr,ms){
+ if(!arr||!arr.length)return null;
+ const target=Date.now()-ms;
+ let p=arr[0];
+ for(const x of arr){if(x.t<=target)p=x;else break}
+ return p;
+}
+function calcLiveSignal(code){
+ const q=LIVE[code] || DATA?.quote_snapshot?.[code];
+ const arr=LIVE_HISTORY[code]||[];
+ if(!q||!q.price)return {score:0,level:'等待行情',tone:'live-cold',chg1:null,chg3:null,chg5:null,amount5:null,detail:'暂无实时行情'};
+ const p1=pointAgo(arr,60*1000), p3=pointAgo(arr,3*60*1000), p5=pointAgo(arr,5*60*1000);
+ const change=(p)=>p&&p.price?Number(((q.price/p.price-1)*100).toFixed(2)):null;
+ const chg1=change(p1), chg3=change(p3), chg5=change(p5);
+ const amount5=(p5&&q.amount_yi!=null&&p5.amount_yi!=null)?Number((q.amount_yi-p5.amount_yi).toFixed(2)):null;
+ const amp=Number(q.amplitude_pct??(((q.high&&q.low&&q.open)?((q.high-q.low)/q.open*100):0).toFixed(2)));
+ let score=50;
+ if(chg1!=null)score+=chg1*8;
+ if(chg3!=null)score+=chg3*7;
+ if(chg5!=null)score+=chg5*6;
+ if(amount5!=null)score+=Math.min(Math.max(amount5,0),1.5)*16;
+ if(amp)score+=Math.min(amp,8)*2;
+ if(q.pct>0)score+=Math.min(q.pct,5)*2;
+ score=Math.max(0,Math.min(100,Number(score.toFixed(1))));
+ let level='实时观察', tone='live-watch', detail='等待更多分钟数据';
+ if(arr.length<3){
+   level='采样中'; tone='live-cold'; score=0; detail='打开页面后约1-5分钟会更准';
+ }else if((q.pct>=5.5)||(chg5!=null&&chg5>=3.0)){
+   level='急拉，不追'; tone='live-risk'; detail='短时涨幅过快，先看回踩承接';
+ }else if(score>=82 && (chg3??0)>0.8){
+   level='分钟强启动'; tone='live-strong'; detail='短时价格与成交额同步走强';
+ }else if(score>=72){
+   level='放量走强'; tone='live-good'; detail='有短线资金推动迹象';
+ }else if(amount5!=null && amount5>=0.25 && Math.abs(chg5??0)<=0.8 && q.pct<3){
+   level='资金承接'; tone='live-watch'; detail='成交额增加但价格未明显拉开';
+ }else if((chg3??0)<-1.2 || (chg5??0)<-1.8){
+   level='转弱'; tone='live-risk'; detail='短时回落较快';
+ }
+ return {score,level,tone,chg1,chg3,chg5,amount5,amp,detail};
+}
+function renderLiveRadar(){
+ const codes=[...new Set([...(DATA?.opportunities||[]).map(x=>x.code),...(DATA?.watchlist||[]).map(x=>x.code),...(DATA?.candidates||[]).slice(0,20).map(x=>x.code),...getWatchCodes()])];
+ const amap=analysisMap(), snap=DATA?.quote_snapshot||{};
+ const rows=codes.map(code=>{
+   const base=amap[code]||snap[code]||LIVE[code]||{code,name:code};
+   const q=LIVE[code]||base;
+   const sig=calcLiveSignal(code);
+   return {code,base,q,sig};
+ }).filter(x=>x.q&&x.q.price).sort((a,b)=>b.sig.score-a.sig.score).slice(0,10);
+ if(!$('liveRadar'))return;
+ $('liveRadar').innerHTML=rows.length?rows.map(x=>`
+   <div class="livecard">
+    <div><b>${x.q.name||x.base.name||x.code}</b> <span class="mut">${x.code}</span></div>
+    <div style="margin-top:3px"><span class="${(x.q.pct??0)>=0?'good':'bad'}"><b>${x.q.price}</b> ${(x.q.pct??0)>=0?'+':''}${x.q.pct??'—'}%</span></div>
+    <div class="livelevel ${x.sig.tone}" style="margin-top:5px">${x.sig.level}　${x.sig.score?x.sig.score:''}</div>
+    <div class="tiny">1m ${x.sig.chg1??'—'}%｜3m ${x.sig.chg3??'—'}%｜5m ${x.sig.chg5??'—'}%</div>
+    <div class="tiny">5m额 ${x.sig.amount5??'—'}亿｜振幅 ${x.sig.amp??'—'}%</div>
+    <div class="livebar"><span style="width:${Math.max(5,Math.min(100,x.sig.score||8))}%"></span></div>
+    <div class="tiny" style="margin-top:5px">${x.sig.detail}</div>
+   </div>`).join(''):'<div class="empty">等待实时行情采样…</div>';
+}
 function stockCard(raw,rank=null){
  const x=currentQuote(raw), bp=x.buy_plan||{}, bt=x.backtest||{}, f=x.fund_flow||{}, rs=x.rise_signal||{}, es=x.early_signal||{}, el=x.elasticity||{};
- const sc=x.score>=80?'good':(x.score>=70?'warn':'bad');
+ const sc=x.score>=80?'good':(x.score>=70?'warn':'bad'); const ls=calcLiveSignal(x.code);
  const state=dynamicBuyState(x); const tc=state==='进入买点区'?'tag':'tag wait';
  const riseTone='rise-'+(rs.tone||'neutral');
  let chips=(x.reasons||[]).map(s=>`<span class="chip">${s}</span>`).join('')+(x.warnings||[]).map(s=>`<span class="chip w">${s}</span>`).join('');
@@ -120,7 +231,7 @@ function stockCard(raw,rank=null){
    <div class="kv" style="margin-top:5px">5日上涨估计 <b>${rs.estimated_up_5d??'—'}%</b> ｜ 目标胜率 <b>${rs.target_win_5d??'—'}%</b><br>平均5日 <b class="${(rs.avg_5d_return??0)>=0?'good':'bad'}">${rs.avg_5d_return??'—'}%</b> ｜ 平均上冲 <b>${rs.avg_max_up_5d??'—'}%</b></div>
  </div>
  <div><span class="${tc}">${state}</span><div class="kv" style="margin-top:5px">${rs.confidence||bt.confidence||'样本不足'}｜${rs.sample_size??bt.sample_size??0}次<br><span class="tiny">${rs.conclusion||''}</span><br>资金 <b>${f.available?money(f.main_yi):'未接入'}</b></div></div>
- </div><div class="chips">${chips||'<span class="mut">暂无额外信号</span>'}</div>
+ </div><div class="livebox tiny">⚡ 实时：<b class="${ls.tone}">${ls.level}</b>｜1m ${ls.chg1??'—'}%｜3m ${ls.chg3??'—'}%｜5m ${ls.chg5??'—'}%｜5m成交额 ${ls.amount5??'—'}亿｜${ls.detail}</div><div class="chips">${chips||'<span class="mut">暂无额外信号</span>'}</div>
  <details><summary>查看统计与后台条件</summary><div class="kv">
  弹性 <b>${el.level||"—"} ${el.score??"—"}</b> ｜ ATR14 <b>${el.atr14_pct??"—"}%</b> ｜ 10日均振幅 <b>${el.avg_amp10??"—"}%</b> ｜ ${el.swing_fit||"—"}<br>阶段 <b>${es.stage||"—"}</b> ｜ 追高风险 <b>${es.chase_risk||"—"}</b> ｜ 早期分 <b>${es.early_score??"—"}</b><br>近3/5/10日 <b>${es.ret3??"—"}% / ${es.ret5??"—"}% / ${es.ret10??"—"}%</b> ｜ 连涨 <b>${es.up_streak??"—"}天</b> ｜ 距MA5 <b>${es.dist_ma5??"—"}%</b><br>技术触发价 <b>${x.trigger}</b> ｜ 量比 <b>${x.volume_ratio}</b> ｜ 盈亏比 <b>${x.rr1}</b><br>
  回测匹配：${bt.match_type||"—"}｜样本 ${bt.sample_size??0}次<br>历史上涨率：1日 ${bt.up_rate_1d??'—'}% ｜ 3日 ${bt.up_rate_3d??'—'}% ｜ 5日 ${bt.up_rate_5d??'—'}%<br>
@@ -162,19 +273,20 @@ function renderWatch(){
    let x=amap[code], q={...(snap[code]||{}),...(LIVE[code]||{})}, s=SYMBOLS.find(z=>z.code===code);
    if(x){
      x=currentQuote(x);
-     const rs=x.rise_signal||{}, es=x.early_signal||{}, el=x.elasticity||{}, bp=x.buy_plan||{};
+     const rs=x.rise_signal||{}, es=x.early_signal||{}, el=x.elasticity||{}, bp=x.buy_plan||{}, ls=calcLiveSignal(code);
      return `<div class="watch-item"><div>
        <div><b>${x.name}</b> <span class="mut">${code}</span>　<span class="elastic ${el.level==='高弹性'?'high':(el.level==='中弹性'?'mid':'low')}">${el.level||'—'} ${el.score??'—'}</span></div>
        <div style="margin-top:3px"><span class="${x.pct>=0?'good':'bad'}"><b>${x.price}</b>　${x.pct>=0?'+':''}${x.pct}%</span>　<span class="tiny">成交额 ${x.amount_yi??'—'}亿｜ATR14 ${el.atr14_pct??'—'}%｜均振幅 ${el.avg_amp10??'—'}%</span></div>
        <div class="tiny" style="margin-top:3px">阶段 ${es.stage||'—'}｜近5日 ${es.ret5??'—'}%｜待涨 <b class="rise-${rs.tone||'neutral'}">${rs.level||'—'} ${rs.index??'—'}</b>｜5日上涨估计 ${rs.estimated_up_5d??'—'}%</div>
-       <div class="tiny">买入区 <b>${bp.buy_low??'—'}～${bp.buy_high??'—'}</b>｜理想 ${bp.ideal_buy??'—'}｜${dynamicBuyState(x)}｜目标 ${x.target1??'—'} / ${x.target2??'—'}</div>
+       <div class="tiny">买入区 <b>${bp.buy_low??'—'}～${bp.buy_high??'—'}</b>｜理想 ${bp.ideal_buy??'—'}｜${dynamicBuyState(x)}｜目标 ${x.target1??'—'} / ${x.target2??'—'}</div><div class="tiny">⚡ 实时 <b class="${ls.tone}">${ls.level}</b>｜3m ${ls.chg3??'—'}%｜5m ${ls.chg5??'—'}%｜5m额 ${ls.amount5??'—'}亿</div>
      </div><button class="danger mini" onclick="removeWatch('${code}')">删除</button></div>`;
    }
    if(q){
+     const ls=calcLiveSignal(code);
      return `<div class="watch-item"><div>
        <div><b>${q.name||s?.name||code}</b> <span class="mut">${code}</span>　<span class="elastic ${String(q.quick_elasticity_level||'').includes('高')?'high':(String(q.quick_elasticity_level||'').includes('中')?'mid':'low')}">${q.quick_elasticity_level||'日内弹性—'} ${q.quick_elasticity_score??'—'}</span></div>
        <div style="margin-top:3px"><span class="${q.pct>=0?'good':'bad'}"><b>${q.price}</b>　${q.pct>=0?'+':''}${q.pct}%</span>　<span class="tiny">成交额 ${q.amount_yi??'—'}亿｜日内振幅 ${q.amplitude_pct??'—'}%</span></div>
-       <div class="tiny">开 ${q.open??'—'}｜高 ${q.high??'—'}｜低 ${q.low??'—'}｜数据 ${q.quote_source||'快速行情'}</div>
+       <div class="tiny">开 ${q.open??'—'}｜高 ${q.high??'—'}｜低 ${q.low??'—'}｜数据 ${q.quote_source||'快速行情'}</div><div class="tiny">⚡ 实时 <b class="${ls.tone}">${ls.level}</b>｜3m ${ls.chg3??'—'}%｜5m ${ls.chg5??'—'}%｜5m额 ${ls.amount5??'—'}亿</div>
        <div class="tiny">未进入深度候选池：先看快速行情/日内弹性；若要完整买点，等待下一轮后台扫描或保持在自选观察。</div>
      </div><button class="danger mini" onclick="removeWatch('${code}')">删除</button></div>`;
    }
@@ -226,7 +338,7 @@ function renderAvoidList(list){
 function renderMain(){
  if(!DATA)return;
  const d=DATA;
- $('status').innerHTML=`V${d.version||'—'}　模型扫描 <b>${d.updated_at}</b>　｜　股票池 ${d.market.universe} 只　｜　${d.data_mode||'行情层'}`;
+ $('status').innerHTML=`V${d.version||'—'}　模型扫描 <b>${d.updated_at}</b>　｜　股票池 ${d.market.universe} 只　｜　${d.data_mode||'行情层'}`; $('modelClock').textContent='模型：'+(d.updated_at||'—');
  $('mScore').textContent=d.market.score+'/100'; $('mState').textContent=d.market.state||'—'; $('mUp').textContent=d.market.up_ratio+'%'; $('mMed').textContent=(d.market.median_pct>=0?'+':'')+d.market.median_pct+'%'; $('marketGuide').textContent='短线建议：'+(d.market.guidance||'—');
  const h=d.source_health||{}; $('health').innerHTML=Object.values(h).map(x=>`<span><i class="dot ${x.ok?'':'off'}"></i>${x.role}</span>`).join('');
  $('opps').innerHTML=(d.opportunities||[]).length?d.opportunities.map((x,i)=>stockCard(x,i+1)).join(''):'<div class="empty">没有达到阈值的机会。今天可以不做。</div>';
@@ -237,6 +349,7 @@ function renderMain(){
  if(!(sf.inflow||[]).length) sectorJsonpFallback();
  renderWatch();
  renderAvoidList(d.avoid_list||[]);
+ renderLiveRadar();
 }
 async function loadData(manual=false){
  try{
@@ -250,17 +363,34 @@ async function loadData(manual=false){
    renderMain(); refreshLiveQuotes();
  }catch(e){$('status').textContent='⚠️ '+e.message;$('opps').innerHTML='<div class="empty">等待后台扫描数据</div>'}
 }
+function quickElasticFromQuote(q){
+ const amp=Number(q.amplitude_pct||0), pct=Math.abs(Number(q.pct||0));
+ const score=Math.max(0,Math.min(100,Math.round(amp*13+pct*5)));
+ const level=score>=70?'日内高弹性':(score>=45?'日内中弹性':'日内低弹性');
+ return {score,level};
+}
 function tencentScript(codes){
  return new Promise(resolve=>{
    if(!codes.length){resolve();return}
    const vars=codes.map(c=>('6'===c[0]?'sh':'sz')+c);
    const script=document.createElement('script');
-   script.src='https://qt.gtimg.cn/q='+vars.join(',');
+   script.src='https://qt.gtimg.cn/q='+vars.join(',')+'&_='+Date.now();
    script.onload=()=>{try{
      vars.forEach(v=>{
        const raw=window['v_'+v]; if(!raw)return; const a=raw.split('~'); if(a.length<38)return;
-       const code=v.slice(2), price=Number(a[3]), prev=Number(a[4]), pct=prev?((price-prev)/prev*100):0, amount=Number(a[37]||0);
-       LIVE[code]={code,name:a[1],price:Number(price.toFixed(2)),pct:Number(pct.toFixed(2))};
+       const code=v.slice(2), price=Number(a[3]), prev=Number(a[4]), open=Number(a[5]);
+       const high=Number(a[33]||price), low=Number(a[34]||price);
+       const pct=prev?((price-prev)/prev*100):Number(a[32]||0);
+       const amountRaw=Number(a[37]||0); // 腾讯通常为万元口径
+       const amount_yi=Number((amountRaw/10000).toFixed(2));
+       const amplitude_pct=prev?Number(((high-low)/prev*100).toFixed(2)):null;
+       const qe=quickElasticFromQuote({pct,amplitude_pct});
+       LIVE[code]={
+         code,name:a[1],price:Number(price.toFixed(2)),pct:Number(pct.toFixed(2)),
+         open:Number(open.toFixed(2)),high:Number(high.toFixed(2)),low:Number(low.toFixed(2)),
+         amount_yi,amplitude_pct,quick_elasticity_score:qe.score,quick_elasticity_level:qe.level,
+         quote_source:'腾讯实时'
+       };
        try{delete window['v_'+v]}catch(e){}
      });
    }finally{script.remove();resolve()}};
@@ -268,18 +398,22 @@ function tencentScript(codes){
    document.body.appendChild(script);
  });
 }
+
 async function refreshLiveQuotes(){
  if(!DATA)return;
- const codes=[...new Set([...(DATA.opportunities||[]).map(x=>x.code),...(DATA.candidates||[]).slice(0,20).map(x=>x.code),...getWatchCodes()])];
+ const codes=[...new Set([...(DATA.opportunities||[]).map(x=>x.code),...(DATA.candidates||[]).slice(0,25).map(x=>x.code),...getWatchCodes()])];
  for(let i=0;i<codes.length;i+=60)await tencentScript(codes.slice(i,i+60));
- $('liveClock').textContent='行情刷新：'+new Date().toLocaleTimeString();
+ updateLiveHistory(codes);
+ $('liveClock').textContent='实时行情：'+new Date().toLocaleTimeString();
  renderMain();
 }
+
 $('watchSearch').addEventListener('input',searchSymbols);
 $('watchSearch').addEventListener('keydown',e=>{if(e.key==='Enter')addFirstSearch()});
 document.addEventListener('click',e=>{if(!e.target.closest('.watch-tools'))$('searchBox').style.display='none'});
 
+loadLiveHistory();
 loadData();
-setInterval(refreshLiveQuotes,15000);
+setInterval(refreshLiveQuotes,10000);
 setInterval(()=>loadData(false),60000);
 </script></body></html>
