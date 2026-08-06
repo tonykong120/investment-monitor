@@ -1,6 +1,6 @@
 <!doctype html><html lang="zh-CN"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>短线机会工作台 V2.0</title>
+<title>短线机会工作台 V2.1</title>
 <style>
 :root{--bg:#0b0d10;--card:#14171c;--card2:#1a1e24;--line:#292f38;--txt:#f2f4f7;--mut:#9098a4;--g:#49d17d;--y:#efb64a;--r:#ef6965;--b:#79a1ff}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font:14px/1.55 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
@@ -35,7 +35,7 @@ input{background:#111419;color:white;border:1px solid var(--line);border-radius:
 @media(max-width:960px){.grid,.grid2{grid-template-columns:1fr}.metrics{grid-template-columns:1fr 1fr}.stockrow{grid-template-columns:1fr 1fr}.top,.banner{align-items:flex-start;flex-direction:column}.watch-tools{grid-template-columns:1fr auto}}
 </style></head><body><div class="wrap">
 <div class="top">
- <div><h1>🎯 短线机会工作台 V2.0</h1><div class="sub">短波段模式｜高弹性优先｜1～2天能拉开幅度的票优先｜行情约15秒</div></div>
+ <div><h1>🎯 短线机会工作台 V2.1</h1><div class="sub">短波段模式｜高弹性优先｜实时行情层+模型扫描层｜行情约15秒</div></div>
  <div class="actions"><span class="speed" id="liveClock">行情刷新：—</span><button onclick="loadData(true)">刷新模型结果</button></div>
 </div>
 <div class="panel banner"><div id="status">读取最新扫描结果…</div><div id="health" class="health"></div></div>
@@ -48,7 +48,7 @@ input{background:#111419;color:white;border:1px solid var(--line);border-radius:
 <section class="panel">
  <h2>今日机会（最多5只）</h2>
  <div id="opps" class="cards"><div class="empty">读取中…</div></div>
- <div class="tiny" style="margin-top:10px">现价/涨跌每约15秒尝试更新；买入区、待涨指数、上涨率和目标胜率来自最近一次模型扫描。GitHub Actions 定时任务可能有延迟，因此两种更新时间会分开显示。</div>
+ <div class="tiny" style="margin-top:10px">现价/涨跌约15秒刷新；买入区、待涨指数、弹性评分来自模型扫描。注意：行情和模型是两套时间，模型更新受后台任务影响。</div>
 </section>
 <section class="panel">
  <h2>市场状态</h2><div class="metrics">
@@ -226,7 +226,7 @@ function renderAvoidList(list){
 function renderMain(){
  if(!DATA)return;
  const d=DATA;
- $('status').innerHTML=`V${d.version||'—'}　模型扫描 <b>${d.updated_at}</b>　｜　股票池 ${d.market.universe} 只`;
+ $('status').innerHTML=`V${d.version||'—'}　模型扫描 <b>${d.updated_at}</b>　｜　股票池 ${d.market.universe} 只　｜　${d.data_mode||'行情层'}`;
  $('mScore').textContent=d.market.score+'/100'; $('mState').textContent=d.market.state||'—'; $('mUp').textContent=d.market.up_ratio+'%'; $('mMed').textContent=(d.market.median_pct>=0?'+':'')+d.market.median_pct+'%'; $('marketGuide').textContent='短线建议：'+(d.market.guidance||'—');
  const h=d.source_health||{}; $('health').innerHTML=Object.values(h).map(x=>`<span><i class="dot ${x.ok?'':'off'}"></i>${x.role}</span>`).join('');
  $('opps').innerHTML=(d.opportunities||[]).length?d.opportunities.map((x,i)=>stockCard(x,i+1)).join(''):'<div class="empty">没有达到阈值的机会。今天可以不做。</div>';
