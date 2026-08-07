@@ -811,8 +811,8 @@ def main():
         market_guidance="正常观察，优先高弹性+启动初期" if market_score>=55 else ("环境偏弱，降低仓位，只做最强1-2只" if market_score>=42 else "环境弱，少做或不做")
 
         data={
-            "version":"2.3","updated_at":now,
-            "data_mode":"前端实时行情层 + 事件题材资金雷达 + 定时模型层",
+            "version":"2.4","updated_at":now,
+            "data_mode":"前端实时行情层 + 资金异动反推雷达 + 定时模型层",
             "refresh_note":"前端行情约10秒；模型依赖后台扫描任务，存在任务排队延迟",
             "market":{"score":market_score,"state":market_state,"guidance":market_guidance,"up_ratio":round(up,1),"median_pct":round(med,2),"universe":len(quotes)},
             "opportunities":[x for x in candidates if x["status"] in ("高弹性买点","高弹性观察","中弹性备选") and not x.get("early_signal",{}).get("extended") and x.get("elasticity",{}).get("score",0)>=48][:5],

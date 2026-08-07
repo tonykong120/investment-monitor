@@ -1,6 +1,6 @@
 <!doctype html><html lang="zh-CN"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>短线机会工作台 V2.3</title>
+<title>短线机会工作台 V2.4</title>
 <style>
 :root{--bg:#0b0d10;--card:#14171c;--card2:#1a1e24;--line:#292f38;--txt:#f2f4f7;--mut:#9098a4;--g:#49d17d;--y:#efb64a;--r:#ef6965;--b:#79a1ff}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font:14px/1.55 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
@@ -48,29 +48,30 @@ input{background:#111419;color:white;border:1px solid var(--line);border-radius:
 
 </style></head><body><div class="wrap">
 <div class="top">
- <div><h1>⚡ 短线机会工作台 V2.3</h1><div class="sub">短波段模式｜高弹性优先｜事件题材资金异动｜前端实时行情约10秒</div></div>
+ <div><h1>⚡ 短线机会工作台 V2.4</h1><div class="sub">短波段模式｜高弹性优先｜资金异动反推题材｜前端实时行情约10秒</div></div>
  <div class="actions"><span class="speed" id="liveClock">实时行情：—</span><span class="speed" id="modelClock">模型：—</span><button onclick="loadData(true)">刷新模型结果</button></div>
 </div>
 <div class="panel banner"><div id="status">读取最新扫描结果…</div><div id="health" class="health"></div></div>
 <div class="panel" style="margin-bottom:12px;padding:10px 14px">
   <div class="tiny">⚡ <b>短波段逻辑：</b>高弹性优先，但高弹性 ≠ 一定上涨。必须同时满足“没涨多 + 早期位置 + 待涨不弱”。</div>
-  <div class="tiny" style="margin-top:4px">高弹性：历史ATR/振幅大，1～2天更容易拉开幅度；中弹性：适合2～5日；低弹性：短线效率偏低。V2.3新增“事件题材资金异动”，用板块资金先找方向，再看个股弹性。</div>
+  <div class="tiny" style="margin-top:4px">高弹性：历史ATR/振幅大，1～2天更容易拉开幅度；中弹性：适合2～5日；低弹性：短线效率偏低。V2.4新增“资金异动反推题材”：先扫全市场资金异动，再反推可能题材/新闻线索。</div>
 </div>
 
 <section class="panel" style="margin-bottom:12px">
  <div style="display:flex;justify-content:space-between;gap:10px;align-items:center">
-  <h2>🛰️ 事件题材资金异动雷达</h2>
-  <span class="tiny" id="eventTime">等待扫描</span>
+  <h2>🧲 资金异动反推雷达</h2>
+  <span class="tiny" id="capitalTime">等待扫描</span>
  </div>
- <div class="explainbox tiny">新闻出来再看个股通常已经晚。这里用“事件关键词 → 扩展产业链词 → 板块/概念资金 → 成分股实时异动”快速反推资金正在攻击哪里。适合英伟达6G、AI算力、机器人、存储等突发题材。</div>
+ <div class="explainbox tiny">这版不是追某条新闻，而是反过来做：<b>先扫全市场板块/概念资金异动 → 聚类异动个股 → 反推可能题材/新闻线索</b>。新闻只是后验验证，真正优先级是资金先动。</div>
  <div class="event-tools">
-  <input id="eventTerms" placeholder="输入事件关键词，如 英伟达 6G 基站 通信 光模块 CPO 算力">
-  <button onclick="useEventProfile('nvidia6g')">英伟达6G</button>
-  <button class="secondary" onclick="runEventRadar(true)">扫描资金异动</button>
+  <input id="capitalFilter" placeholder="可选过滤词：如 通信 / 算力 / 半导体；留空=全市场资金扫描">
+  <button onclick="runCapitalRadar(true)">扫描资金异动</button>
+  <button class="secondary" onclick="clearCapitalFilter()">全市场</button>
  </div>
+ <div class="explainbox tiny" id="capitalClues">反推线索：等待资金异动扫描…</div>
  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-  <div><div class="tiny" style="margin-bottom:6px">🔥 事件相关板块/概念</div><div id="eventBoards" class="sector-list"><div class="empty">等待事件扫描…</div></div></div>
-  <div><div class="tiny" style="margin-bottom:6px">⚡ 相关成分股异动</div><div id="eventStocks" class="sector-list"><div class="empty">等待板块成分股…</div></div></div>
+  <div><div class="tiny" style="margin-bottom:6px">🔥 资金异动方向 / 可能题材</div><div id="capitalBoards" class="sector-list"><div class="empty">等待全市场扫描…</div></div></div>
+  <div><div class="tiny" style="margin-bottom:6px">⚡ 资金先动个股 / 可加入自选</div><div id="capitalStocks" class="sector-list"><div class="empty">等待板块成分股…</div></div></div>
  </div>
 </section>
 
@@ -317,29 +318,37 @@ function renderWatch(){
  }).join(''):'<div class="empty">暂无自选。上方搜索股票后添加。</div>';
 }
 
-const EVENT_PROFILES={
-  nvidia6g:['英伟达','6G','基站','通信设备','通信服务','射频','天线','光模块','CPO','光通信','算力','边缘计算','服务器','交换机','液冷','铜缆高速连接']
-};
-const EVENT_EXPAND={
-  '英伟达':['算力','服务器','液冷','铜缆高速连接','CPO','光模块','光通信','通信设备','边缘计算','AI芯片'],
-  '6G':['通信设备','通信服务','卫星导航','5G概念','6G概念','射频','天线','光模块','光通信','基站','边缘计算'],
-  '基站':['通信设备','通信服务','射频','天线','PCB','光模块','边缘计算'],
-  '算力':['服务器','液冷','CPO','光模块','交换机','数据中心','AI芯片'],
-  '通信':['通信设备','通信服务','光通信','射频','天线','卫星导航']
-};
-function useEventProfile(name){
- const arr=EVENT_PROFILES[name]||[];
- $('eventTerms').value=arr.join(' ');
- localStorage.setItem('eventTerms',$('eventTerms').value);
- runEventRadar(true);
+const THEME_RULES=[
+ ['AI算力',['算力','数据中心','服务器','液冷','CPO','光模块','光通信','铜缆','高速连接','交换机','通信设备','边缘计算']],
+ ['通信/6G/卫星',['通信','6G','5G','基站','射频','天线','卫星','导航','光通信','通信服务','通信设备']],
+ ['半导体/国产替代',['半导体','芯片','集成电路','存储','先进封装','光刻','设备','材料','电子化学品','EDA']],
+ ['机器人/智能制造',['机器人','减速器','伺服','工业母机','自动化','人形机器人','机器视觉','传感器']],
+ ['低空经济/无人机',['低空','无人机','航空','通航','飞行汽车','eVTOL','空管']],
+ ['军工/航天',['军工','航天','航空','船舶','卫星','雷达','北斗']],
+ ['新能源/储能',['储能','电池','锂电','固态电池','新能源车','充电桩','光伏','风电','电力设备']],
+ ['电力/电网/设备更新',['电力','电网','特高压','变压器','电力设备','智能电网','设备更新']],
+ ['医药/创新药',['医药','创新药','CRO','生物','医疗器械','减肥药','中药']],
+ ['消费/出海',['消费','食品','白酒','零售','家电','旅游','免税','跨境电商','出海']],
+ ['金融/券商',['证券','券商','保险','银行','金融科技','互联金融']],
+ ['地产/基建',['房地产','建筑','建材','水泥','工程机械','装配式建筑']],
+ ['资源/周期',['有色','稀土','黄金','煤炭','钢铁','化工','石油','天然气','小金属']]
+];
+function getCapitalFilterTerms(){
+ const txt=($('capitalFilter')?.value||localStorage.getItem('capitalFilter')||'').trim();
+ if($('capitalFilter'))$('capitalFilter').value=txt;
+ if(txt)localStorage.setItem('capitalFilter',txt);else localStorage.removeItem('capitalFilter');
+ return txt.split(/[\s,，、|/]+/).map(x=>x.trim()).filter(Boolean);
 }
-function getEventTerms(){
- let txt=($('eventTerms')?.value||localStorage.getItem('eventTerms')||EVENT_PROFILES.nvidia6g.join(' ')).trim();
- if($('eventTerms'))$('eventTerms').value=txt;
- localStorage.setItem('eventTerms',txt);
- let terms=txt.split(/[\s,，、|/]+/).map(x=>x.trim()).filter(Boolean);
- let extra=[];terms.forEach(t=>{Object.keys(EVENT_EXPAND).forEach(k=>{if(t.includes(k)||k.includes(t))extra.push(...EVENT_EXPAND[k])})});
- return [...new Set([...terms,...extra])];
+function clearCapitalFilter(){
+ if($('capitalFilter'))$('capitalFilter').value='';
+ localStorage.removeItem('capitalFilter');
+ runCapitalRadar(true);
+}
+function inferThemes(name){
+ name=String(name||'');
+ const out=[];
+ THEME_RULES.forEach(([theme,keys])=>{if(keys.some(k=>name.includes(k)))out.push(theme)});
+ return out.length?out:['待验证题材'];
 }
 function jsonpFetch(url,params={},timeout=9000){
  return new Promise((resolve,reject)=>{
@@ -353,22 +362,37 @@ function jsonpFetch(url,params={},timeout=9000){
    document.body.appendChild(script);
  });
 }
-function boardMatchScore(row,terms){
- const name=String(row.name||''); let hit=0;
- terms.forEach(t=>{if(t&&name.includes(t))hit+=18});
- const flow=Math.max(-20,Math.min(60,Number(row.main_yi||0)*2));
- const pct=Math.max(-10,Math.min(35,Number(row.pct||0)*5));
- const pctFlow=Number(row.main_pct||0)>0?8:0;
- return Math.round(Math.max(0,hit+flow+pct+pctFlow));
+function capitalAnomalyScore(row,terms=[]){
+ const main=Number(row.main_yi||0), pct=Number(row.pct||0), mp=Number(row.main_pct||0), amt=Number(row.amount_yi||0);
+ let score=50;
+ score+=Math.max(-20,Math.min(45,main*2.2));
+ score+=Math.max(-12,Math.min(28,pct*5));
+ score+=Math.max(-8,Math.min(18,mp*2));
+ score+=Math.max(0,Math.min(10,Math.log10(Math.max(amt,1))*5));
+ if(row.kind==='concept')score+=4;
+ if(main>0 && pct<1.8)score+=8; // 资金先动但价格还没飞
+ if(pct>5.5)score-=10; // 防追高
+ const name=String(row.name||'');
+ terms.forEach(t=>{if(t&&name.includes(t))score+=18});
+ return Math.round(Math.max(0,Math.min(100,score)));
 }
-function classifyEventStock(x){
+function classifyCapitalBoard(row){
+ const main=Number(row.main_yi||0), pct=Number(row.pct||0), mp=Number(row.main_pct||0);
+ if(pct>=5.5 && main<=0)return ['冲高兑现，不追','event-risk'];
+ if(main>=8 && pct>=1.2 && pct<=5.2)return ['主线资金攻击','event-hot'];
+ if(main>=4 && pct<1.5)return ['资金先动/潜伏','event-hot'];
+ if(main>=3 && mp>1.5)return ['资金增强','event-warn'];
+ if(pct>=3.5)return ['题材发酵中，防追高','event-warn'];
+ return ['普通资金流入',''];
+}
+function classifyCapitalStock(x){
  const pct=Number(x.pct||0), main=Number(x.main_yi||0), mp=Number(x.main_pct||0), amt=Number(x.amount_yi||0);
- if(pct>=6.5 && main<=0)return ['冲高兑现','event-risk'];
- if(pct>=5.5)return ['已启动，谨慎追','event-warn'];
- if(main>0.25 && pct>=1.2 && pct<=5.2)return ['资金推动','event-hot'];
- if(main>0.15 && pct<1.5)return ['资金先行/潜伏','event-hot'];
- if(amt>5 && pct>0)return ['放量观察','event-warn'];
- return ['普通观察',''];
+ if(pct>=6.5 && main<=0)return ['冲高兑现','event-risk',40];
+ if(pct>=5.8)return ['已涨高，等回踩','event-warn',55];
+ if(main>0.25 && pct>=1.0 && pct<=5.0)return ['资金推动','event-hot',80];
+ if(main>0.12 && pct<1.2)return ['资金先行/潜伏','event-hot',86];
+ if(amt>5 && pct>0)return ['放量观察','event-warn',68];
+ return ['普通观察','',50];
 }
 async function fetchBoards(kind='concept'){
  const fs=kind==='industry'?'m:90 t:2 f:!50':'m:90 t:3 f:!50';
@@ -376,49 +400,64 @@ async function fetchBoards(kind='concept'){
  const diff=(j&&j.data&&j.data.diff)||[];
  return diff.map(x=>({kind,code:String(x.f12||''),name:String(x.f14||''),pct:Number(x.f3||0),amount_yi:Number((Number(x.f6||0)/1e8).toFixed(2)),main_yi:Number((Number(x.f62||0)/1e8).toFixed(2)),main_pct:Number(x.f184||0)})).filter(x=>x.name&&x.code);
 }
-async function fetchBoardStocks(boardCode){
+async function fetchBoardStocks(boardCode,boardName=''){
  const j=await jsonpFetch('https://82.push2.eastmoney.com/api/qt/clist/get',{pn:'1',pz:'80',po:'1',np:'1',ut:'bd1d9ddb04089700cf9c27f6f7426281',fltt:'2',invt:'2',fid:'f62',fs:'b:'+boardCode,fields:'f12,f14,f2,f3,f6,f62,f184'});
  const diff=(j&&j.data&&j.data.diff)||[];
- return diff.map(x=>({code:String(x.f12||''),name:String(x.f14||''),price:Number(x.f2||0),pct:Number(x.f3||0),amount_yi:Number((Number(x.f6||0)/1e8).toFixed(2)),main_yi:Number((Number(x.f62||0)/1e8).toFixed(2)),main_pct:Number(x.f184||0),board:boardCode})).filter(x=>x.name&&/^(00|60|001|002|003|601|603|605)/.test(x.code));
+ return diff.map(x=>({code:String(x.f12||''),name:String(x.f14||''),price:Number(x.f2||0),pct:Number(x.f3||0),amount_yi:Number((Number(x.f6||0)/1e8).toFixed(2)),main_yi:Number((Number(x.f62||0)/1e8).toFixed(2)),main_pct:Number(x.f184||0),board:boardCode,boardName})).filter(x=>x.name&&/^(00|60|001|002|003|601|603|605)/.test(x.code));
 }
-function renderEventBoards(boards){
- $('eventBoards').innerHTML=boards.length?boards.slice(0,10).map(x=>`<div class="event-board"><div style="display:flex;justify-content:space-between;gap:8px"><div><b>${x.name}</b> <span class="tiny">${x.kind==='concept'?'概念':'行业'} ${x.code}</span></div><div class="event-score">${x.event_score}</div></div><div class="tiny" style="margin-top:4px">涨跌 <span class="${x.pct>=0?'good':'bad'}">${x.pct>=0?'+':''}${x.pct}%</span>｜主力 ${x.main_yi>=0?'+':''}${x.main_yi}亿｜强度 ${x.main_pct>=0?'+':''}${x.main_pct}%</div></div>`).join(''):'<div class="empty">没匹配到事件相关板块，换关键词试试</div>';
+function renderCapitalClues(boards,stocks){
+ const themeCount={};
+ boards.slice(0,12).forEach(b=>inferThemes(b.name).forEach(t=>themeCount[t]=(themeCount[t]||0)+1));
+ const themes=Object.entries(themeCount).sort((a,b)=>b[1]-a[1]).slice(0,6).map(x=>x[0]);
+ const strongStocks=(stocks||[]).filter(x=>Number(x.main_yi||0)>0.12 && Number(x.pct||0)<5.5).slice(0,6).map(x=>x.name);
+ $('capitalClues').innerHTML=`<b>反推可能线索：</b>${themes.length?themes.map(t=>`<span class="event-tag">${t}</span>`).join(''):'<span class="mut">暂无明显聚类</span>'}<br><span class="tiny">验证动作：看这些主题是否有政策/订单/产业链/业绩/海外映射新闻；优先验证资金最先动但涨幅未拉开的个股。</span>${strongStocks.length?`<br><span class="tiny">资金先动个股：${strongStocks.join('、')}</span>`:''}`;
 }
-function renderEventStocks(stocks){
- $('eventStocks').innerHTML=stocks.length?stocks.slice(0,12).map(x=>{
-   const [label,cls]=classifyEventStock(x);
+function renderCapitalBoards(boards){
+ $('capitalBoards').innerHTML=boards.length?boards.slice(0,12).map(x=>{
+   const [label,cls]=classifyCapitalBoard(x); const themes=inferThemes(x.name);
+   return `<div class="event-board"><div style="display:flex;justify-content:space-between;gap:8px"><div><b>${x.name}</b> <span class="tiny">${x.kind==='concept'?'概念':'行业'} ${x.code}</span></div><div class="event-score">${x.capital_score}</div></div><div class="tiny" style="margin-top:4px">涨跌 <span class="${x.pct>=0?'good':'bad'}">${x.pct>=0?'+':''}${x.pct}%</span>｜主力 ${x.main_yi>=0?'+':''}${x.main_yi}亿｜强度 ${x.main_pct>=0?'+':''}${x.main_pct}%</div><div class="tiny ${cls}" style="margin-top:3px">${label}</div><div>${themes.map(t=>`<span class="event-tag">${t}</span>`).join('')}</div></div>`;
+ }).join(''):'<div class="empty">暂未发现明显资金异动方向</div>';
+}
+function renderCapitalStocks(stocks){
+ $('capitalStocks').innerHTML=stocks.length?stocks.slice(0,15).map(x=>{
+   const [label,cls,score]=classifyCapitalStock(x);
    const s=SYMBOLS.find(z=>z.code===x.code); const name=x.name||s?.name||x.code;
-   return `<div class="event-board"><div style="display:flex;justify-content:space-between;gap:8px"><div><b>${name}</b> <span class="tiny">${x.code}</span></div><button class="mini secondary" onclick="addWatch('${x.code}')">加自选</button></div><div class="tiny" style="margin-top:4px">现价 ${x.price||'—'}｜涨跌 <span class="${x.pct>=0?'good':'bad'}">${x.pct>=0?'+':''}${Number(x.pct||0).toFixed(2)}%</span>｜成交 ${x.amount_yi}亿｜主力 ${x.main_yi>=0?'+':''}${x.main_yi}亿</div><div class="tiny ${cls}" style="margin-top:3px">${label}</div></div>`;
- }).join(''):'<div class="empty">相关板块暂未拉到成分股资金</div>';
+   const themes=inferThemes(x.boardName||'');
+   return `<div class="event-board"><div style="display:flex;justify-content:space-between;gap:8px"><div><b>${name}</b> <span class="tiny">${x.code}</span></div><button class="mini secondary" onclick="addWatch('${x.code}')">加自选</button></div><div class="tiny" style="margin-top:4px">${x.boardName?`来自 ${x.boardName}｜`:''}现价 ${x.price||'—'}｜涨跌 <span class="${x.pct>=0?'good':'bad'}">${x.pct>=0?'+':''}${Number(x.pct||0).toFixed(2)}%</span>｜成交 ${x.amount_yi}亿｜主力 ${x.main_yi>=0?'+':''}${x.main_yi}亿</div><div class="tiny ${cls}" style="margin-top:3px">${label}｜异动分 ${score}</div><div>${themes.map(t=>`<span class="event-tag">${t}</span>`).join('')}</div></div>`;
+ }).join(''):'<div class="empty">资金异动方向暂未拉到成分股</div>';
 }
-async function runEventRadar(manual=false){
+async function runCapitalRadar(manual=false){
  const now=Date.now();
- if(!manual && now-EVENT_TRIED_AT<45000)return;
+ if(!manual && now-EVENT_TRIED_AT<35000)return;
  EVENT_TRIED_AT=now;
- const terms=getEventTerms();
- $('eventTime').textContent='扫描中…';
+ const terms=getCapitalFilterTerms();
+ $('capitalTime').textContent='扫描中…';
  try{
    const [concept,industry]=await Promise.allSettled([fetchBoards('concept'),fetchBoards('industry')]);
    let rows=[];
    if(concept.status==='fulfilled')rows.push(...concept.value);
    if(industry.status==='fulfilled')rows.push(...industry.value);
-   rows=rows.map(x=>({...x,event_score:boardMatchScore(x,terms)})).filter(x=>x.event_score>=20).sort((a,b)=>b.event_score-a.event_score);
-   renderEventBoards(rows);
+   rows=rows.map(x=>({...x,capital_score:capitalAnomalyScore(x,terms)}))
+           .filter(x=>x.capital_score>=58 && Number(x.main_yi||0)>0)
+           .sort((a,b)=>b.capital_score-a.capital_score);
+   renderCapitalBoards(rows);
    let stocks=[];
-   for(const b of rows.slice(0,4)){
-     try{stocks.push(...await fetchBoardStocks(b.code))}catch(e){}
+   for(const b of rows.slice(0,6)){
+     try{stocks.push(...(await fetchBoardStocks(b.code,b.name)).map(x=>({...x,boardScore:b.capital_score})))}catch(e){}
    }
-   const by={};stocks.forEach(x=>{if(!by[x.code]||x.main_yi>by[x.code].main_yi)by[x.code]=x});
+   const by={};stocks.forEach(x=>{if(!by[x.code]||((x.main_yi*2+x.boardScore)>(by[x.code].main_yi*2+by[x.code].boardScore)))by[x.code]=x});
    stocks=Object.values(by).sort((a,b)=>{
-     const sa=(Number(a.main_yi||0)*3)+(Number(a.pct||0)*1.8)+(Number(a.main_pct||0)*0.3)+(Number(a.amount_yi||0)*0.05);
-     const sb=(Number(b.main_yi||0)*3)+(Number(b.pct||0)*1.8)+(Number(b.main_pct||0)*0.3)+(Number(b.amount_yi||0)*0.05);
+     const [,,sa0]=classifyCapitalStock(a), [,,sb0]=classifyCapitalStock(b);
+     const sa=sa0+a.boardScore*0.3+Number(a.main_yi||0)*3- Math.max(Number(a.pct||0)-5,0)*10;
+     const sb=sb0+b.boardScore*0.3+Number(b.main_yi||0)*3- Math.max(Number(b.pct||0)-5,0)*10;
      return sb-sa;
    });
-   renderEventStocks(stocks);
-   $('eventTime').textContent='浏览器实时 '+new Date().toLocaleTimeString()+'｜关键词 '+terms.slice(0,8).join('/');
+   renderCapitalStocks(stocks);
+   renderCapitalClues(rows,stocks);
+   $('capitalTime').textContent='浏览器实时 '+new Date().toLocaleTimeString()+(terms.length?'｜过滤 '+terms.join('/'):'｜全市场');
  }catch(e){
-   $('eventTime').textContent='事件资金源暂不可用';
-   $('eventBoards').innerHTML='<div class="empty">事件板块资金源暂不可用，稍后重试</div>';
+   $('capitalTime').textContent='资金异动源暂不可用';
+   $('capitalBoards').innerHTML='<div class="empty">板块资金源暂不可用，稍后重试</div>';
  }
 }
 
@@ -479,7 +518,7 @@ function renderMain(){
  renderWatch();
  renderAvoidList(d.avoid_list||[]);
  renderLiveRadar();
- runEventRadar(false);
+ runCapitalRadar(false);
 }
 async function loadData(manual=false){
  try{
@@ -543,9 +582,9 @@ $('watchSearch').addEventListener('keydown',e=>{if(e.key==='Enter')addFirstSearc
 document.addEventListener('click',e=>{if(!e.target.closest('.watch-tools'))$('searchBox').style.display='none'});
 
 loadLiveHistory();
-if($('eventTerms'))$('eventTerms').value=localStorage.getItem('eventTerms')||EVENT_PROFILES.nvidia6g.join(' ');
+if($('capitalFilter'))$('capitalFilter').value=localStorage.getItem('capitalFilter')||'';
 loadData();
 setInterval(refreshLiveQuotes,10000);
 setInterval(()=>loadData(false),60000);
-setInterval(()=>runEventRadar(false),45000);
+setInterval(()=>runCapitalRadar(false),35000);
 </script></body></html>
