@@ -1,6 +1,6 @@
 <!doctype html><html lang="zh-CN"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>短线机会工作台 V2.5</title>
+<title>短线机会工作台 V2.6</title>
 <style>
 :root{--bg:#0b0d10;--card:#14171c;--card2:#1a1e24;--line:#292f38;--txt:#f2f4f7;--mut:#9098a4;--g:#49d17d;--y:#efb64a;--r:#ef6965;--b:#79a1ff}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font:14px/1.55 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
@@ -47,16 +47,28 @@ input{background:#111419;color:white;border:1px solid var(--line);border-radius:
 .waitpool{border:1px solid #3b5f3f;background:#101c15}.waitbadge{display:inline-block;padding:3px 8px;border-radius:999px;background:#163d29;color:#69e69a;font-weight:800;font-size:11px}.checkgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:7px}.checkok{color:var(--g)}.checkbad{color:var(--r)}
 @media(max-width:960px){.grid,.grid2{grid-template-columns:1fr}.metrics{grid-template-columns:1fr 1fr}.livegrid{grid-template-columns:1fr 1fr}.stockrow{grid-template-columns:1fr}.top,.banner{align-items:flex-start;flex-direction:column}.watch-tools{grid-template-columns:1fr auto}.sector-row{grid-template-columns:1fr .8fr .7fr}.event-tools{grid-template-columns:1fr}.livegrid{grid-template-columns:1fr}}
 
+
+.newsline{margin-top:5px;color:#b7c6da}.newsline a{color:#9bd0ff;text-decoration:none}.newsline a:hover{text-decoration:underline}
+.sector-row .newsline{grid-column:1 / -1;margin-top:2px}
 </style></head><body><div class="wrap">
 <div class="top">
- <div><h1>⚡ 短线机会工作台 V2.5</h1><div class="sub">短波段模式｜高弹性待涨池｜资金异动反推题材｜前端实时行情约10秒</div></div>
+ <div><h1>⚡ 短线机会工作台 V2.6</h1><div class="sub">短波段模式｜板块资金前置｜新闻线索｜高弹性待涨池｜前端实时行情约10秒</div></div>
  <div class="actions"><span class="speed" id="liveClock">实时行情：—</span><span class="speed" id="modelClock">模型：—</span><button onclick="loadData(true)">刷新模型结果</button></div>
 </div>
 <div class="panel banner"><div id="status">读取最新扫描结果…</div><div id="health" class="health"></div></div>
 <div class="panel" style="margin-bottom:12px;padding:10px 14px">
   <div class="tiny">⚡ <b>短波段逻辑：</b>高弹性优先，但高弹性 ≠ 一定上涨。必须同时满足“没涨多 + 早期位置 + 待涨不弱”。</div>
-  <div class="tiny" style="margin-top:4px">高弹性：历史ATR/振幅大，1～2天更容易拉开幅度；中弹性：适合2～5日；低弹性：短线效率偏低。V2.5新增“高弹性待涨池”：待涨≥60%、5日空间≥8%、已进入买点区、换手不低、板块/环境不弱，优先回踩确认。</div>
+  <div class="tiny" style="margin-top:4px">高弹性：历史ATR/振幅大，1～2天更容易拉开幅度；中弹性：适合2～5日；低弹性：短线效率偏低。V2.6保留“高弹性待涨池”，并前置板块资金/新闻线索：待涨≥60%、5日空间≥8%、已进入买点区、换手不低、板块/环境不弱，优先回踩确认。</div>
 </div>
+
+<section class="panel">
+ <div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><h2>💰 板块资金流向</h2><span id="sectorTime" class="tiny">—</span></div>
+ <div class="explainbox tiny">优先看“资金净流入靠前 + 板块本身上涨 + 个股高弹性”的共振。板块资金来自公开资金流口径，不代表真实机构身份；数据源失败时会保留最近一次可用结果并标记“旧数据”。</div>
+ <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+  <div><div class="tiny" style="margin-bottom:6px">🔥 净流入靠前</div><div id="sectorIn" class="sector-list"><div class="empty">等待板块资金数据</div></div></div>
+  <div><div class="tiny" style="margin-bottom:6px">🧊 净流出靠前</div><div id="sectorOut" class="sector-list"><div class="empty">等待板块资金数据</div></div></div>
+ </div>
+</section>
 
 <section class="panel" style="margin-bottom:12px">
  <div style="display:flex;justify-content:space-between;gap:10px;align-items:center">
@@ -119,20 +131,8 @@ input{background:#111419;color:white;border:1px solid var(--line);border-radius:
 </div>
 
 <div class="grid2">
-<section class="panel"><h2>候选池 TOP20</h2><div style="max-height:520px;overflow:auto"><table><thead><tr><th>股票</th><th>弹性</th><th>5日空间</th><th>阶段</th><th>近5日/换手</th><th>待涨</th><th>买入区</th><th>入池</th><th>状态</th></tr></thead><tbody id="tbody"></tbody></table></div></section>
-<section class="panel">
- <div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><h2>💰 板块资金流向</h2><span id="sectorTime" class="tiny">—</span></div>
- <div class="explainbox tiny">优先看“资金净流入靠前 + 板块本身上涨 + 个股高弹性”的共振。板块资金来自公开资金流口径，不代表真实机构身份；数据源失败时会保留最近一次可用结果并标记“旧数据”。</div>
- <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-  <div><div class="tiny" style="margin-bottom:6px">🔥 净流入靠前</div><div id="sectorIn" class="sector-list"><div class="empty">等待板块资金数据</div></div></div>
-  <div><div class="tiny" style="margin-bottom:6px">🧊 净流出靠前</div><div id="sectorOut" class="sector-list"><div class="empty">等待板块资金数据</div></div></div>
- </div>
-</section>
-</div>
-
-<div class="grid2">
-<section class="panel"><h2>⚠️ 今日不追 / 风险池</h2><div class="explainbox tiny">这里不是永久看空，而是提示：当前价格、弹性或追高风险不适合作为新的短线买点。</div><div id="avoidList" class="cards"><div class="empty">等待风险池数据</div></div></section>
-<section class="panel"><h2>🧭 使用逻辑</h2><div class="explainbox tiny">短线优先级：高弹性待涨池 → 板块资金流入 → 回踩/启动初期 → 买点区内 → 止损明确。弹性大代表涨跌都快，所以必须配合“不追价线”和止损。</div><div class="metrics"><div class="metric"><div class="big">1-3天</div><div class="mut">高弹性优先周期</div></div><div class="metric"><div class="big">3-5天</div><div class="mut">中弹性波段周期</div></div><div class="metric"><div class="big">不追</div><div class="mut">涨多/离均线远</div></div><div class="metric"><div class="big">TOP5</div><div class="mut">宁缺毋滥</div></div></div></section>
+<!-- 候选池已按V2.6移除，保留隐藏tbody避免旧JS报错 --><table style="display:none"><tbody id="tbody"></tbody></table>
+<section class="panel"><h2>🧭 使用逻辑</h2><div class="explainbox tiny">短线优先级：板块资金流入 → 资金异动新闻线索 → 高弹性待涨池 → 回踩/启动初期 → 买点区内 → 止损明确。弹性大代表涨跌都快，所以必须配合“不追价线”和止损。</div><div class="metrics"><div class="metric"><div class="big">1-3天</div><div class="mut">高弹性优先周期</div></div><div class="metric"><div class="big">3-5天</div><div class="mut">中弹性波段周期</div></div><div class="metric"><div class="big">不追</div><div class="mut">涨多/离均线远</div></div><div class="metric"><div class="big">TOP5</div><div class="mut">宁缺毋滥</div></div></div></section>
 </div></div>
 
 <script>
@@ -360,6 +360,26 @@ function inferThemes(name){
  THEME_RULES.forEach(([theme,keys])=>{if(keys.some(k=>name.includes(k)))out.push(theme)});
  return out.length?out:['待验证题材'];
 }
+function newsSearchUrl(q){return 'https://www.baidu.com/s?wd='+encodeURIComponent(q+' 今日 利好 新闻 A股');}
+function newsHeadline(name){
+ const themes=inferThemes(name);
+ const t=themes[0]||'题材催化';
+ if(t.includes('AI算力'))return 'AI算力基础设施资金异动，关注服务器、光通信与数据中心催化';
+ if(t.includes('通信'))return '通信/6G/基站链资金异动，关注设备升级与产业链催化';
+ if(t.includes('半导体'))return '半导体链资金回流，关注国产替代、存储与先进封装催化';
+ if(t.includes('机器人'))return '机器人产业链异动，关注人形机器人、减速器与自动化催化';
+ if(t.includes('低空'))return '低空经济方向资金异动，关注政策、订单与应用落地催化';
+ if(t.includes('军工'))return '军工/卫星方向资金活跃，关注装备建设与卫星应用催化';
+ if(t.includes('新能源'))return '新能源/储能方向资金异动，关注技术迭代与产业链修复催化';
+ if(t.includes('电力'))return '电力/电网方向资金增强，关注用电需求、设备更新与能源改革催化';
+ if(t.includes('医药'))return '医药方向资金异动，关注创新药、器械与政策催化';
+ if(t.includes('消费'))return '消费/出海方向资金异动，关注复苏、业绩与海外需求催化';
+ if(t.includes('金融'))return '金融/券商方向资金异动，关注指数放量与市场风险偏好提升';
+ if(t.includes('地产'))return '地产/基建链资金异动，关注政策宽松与基建订单催化';
+ if(t.includes('资源'))return '资源周期方向资金异动，关注价格上行与供需变化催化';
+ return `${name}资金异动，可能存在题材催化或消息预期，需新闻验证`;
+}
+
 function jsonpFetch(url,params={},timeout=9000){
  return new Promise((resolve,reject)=>{
    const cb='jsonp_cb_'+Date.now()+'_'+Math.floor(Math.random()*99999);
@@ -420,12 +440,12 @@ function renderCapitalClues(boards,stocks){
  boards.slice(0,12).forEach(b=>inferThemes(b.name).forEach(t=>themeCount[t]=(themeCount[t]||0)+1));
  const themes=Object.entries(themeCount).sort((a,b)=>b[1]-a[1]).slice(0,6).map(x=>x[0]);
  const strongStocks=(stocks||[]).filter(x=>Number(x.main_yi||0)>0.12 && Number(x.pct||0)<5.5).slice(0,6).map(x=>x.name);
- $('capitalClues').innerHTML=`<b>反推可能线索：</b>${themes.length?themes.map(t=>`<span class="event-tag">${t}</span>`).join(''):'<span class="mut">暂无明显聚类</span>'}<br><span class="tiny">验证动作：看这些主题是否有政策/订单/产业链/业绩/海外映射新闻；优先验证资金最先动但涨幅未拉开的个股。</span>${strongStocks.length?`<br><span class="tiny">资金先动个股：${strongStocks.join('、')}</span>`:''}`;
+ $('capitalClues').innerHTML=`<b>反推可能线索：</b>${themes.length?themes.map(t=>`<span class="event-tag">${t}</span>`).join(''):'<span class="mut">暂无明显聚类</span>'}<br><span class="tiny">验证动作：先看板块资金是否持续，再点新闻线索验证是否有政策/订单/产业链/业绩/海外映射；优先验证资金最先动但涨幅未拉开的个股。</span>${strongStocks.length?`<br><span class="tiny">资金先动个股：${strongStocks.join('、')}</span>`:''}`;
 }
 function renderCapitalBoards(boards){
  $('capitalBoards').innerHTML=boards.length?boards.slice(0,12).map(x=>{
    const [label,cls]=classifyCapitalBoard(x); const themes=inferThemes(x.name);
-   return `<div class="event-board"><div style="display:flex;justify-content:space-between;gap:8px"><div><b>${x.name}</b> <span class="tiny">${x.kind==='concept'?'概念':'行业'} ${x.code}</span></div><div class="event-score">${x.capital_score}</div></div><div class="tiny" style="margin-top:4px">涨跌 <span class="${x.pct>=0?'good':'bad'}">${x.pct>=0?'+':''}${x.pct}%</span>｜主力 ${x.main_yi>=0?'+':''}${x.main_yi}亿｜强度 ${x.main_pct>=0?'+':''}${x.main_pct}%</div><div class="tiny ${cls}" style="margin-top:3px">${label}</div><div>${themes.map(t=>`<span class="event-tag">${t}</span>`).join('')}</div></div>`;
+   return `<div class="event-board"><div style="display:flex;justify-content:space-between;gap:8px"><div><b>${x.name}</b> <span class="tiny">${x.kind==='concept'?'概念':'行业'} ${x.code}</span></div><div class="event-score">${x.capital_score}</div></div><div class="tiny" style="margin-top:4px">涨跌 <span class="${x.pct>=0?'good':'bad'}">${x.pct>=0?'+':''}${x.pct}%</span>｜主力 ${x.main_yi>=0?'+':''}${x.main_yi}亿｜强度 ${x.main_pct>=0?'+':''}${x.main_pct}%</div><div class="tiny ${cls}" style="margin-top:3px">${label}</div><div>${themes.map(t=>`<span class="event-tag">${t}</span>`).join('')}</div><div class="newsline tiny">📰 可能利好：<a target="_blank" href="${newsSearchUrl(x.name)}">${newsHeadline(x.name)}</a></div></div>`;
  }).join(''):'<div class="empty">暂未发现明显资金异动方向</div>';
 }
 function renderCapitalStocks(stocks){
@@ -433,7 +453,7 @@ function renderCapitalStocks(stocks){
    const [label,cls,score]=classifyCapitalStock(x);
    const s=SYMBOLS.find(z=>z.code===x.code); const name=x.name||s?.name||x.code;
    const themes=inferThemes(x.boardName||'');
-   return `<div class="event-board"><div style="display:flex;justify-content:space-between;gap:8px"><div><b>${name}</b> <span class="tiny">${x.code}</span></div><button class="mini secondary" onclick="addWatch('${x.code}')">加自选</button></div><div class="tiny" style="margin-top:4px">${x.boardName?`来自 ${x.boardName}｜`:''}现价 ${x.price||'—'}｜涨跌 <span class="${x.pct>=0?'good':'bad'}">${x.pct>=0?'+':''}${Number(x.pct||0).toFixed(2)}%</span>｜成交 ${x.amount_yi}亿｜主力 ${x.main_yi>=0?'+':''}${x.main_yi}亿</div><div class="tiny ${cls}" style="margin-top:3px">${label}｜异动分 ${score}</div><div>${themes.map(t=>`<span class="event-tag">${t}</span>`).join('')}</div></div>`;
+   return `<div class="event-board"><div style="display:flex;justify-content:space-between;gap:8px"><div><b>${name}</b> <span class="tiny">${x.code}</span></div><button class="mini secondary" onclick="addWatch('${x.code}')">加自选</button></div><div class="tiny" style="margin-top:4px">${x.boardName?`来自 ${x.boardName}｜`:''}现价 ${x.price||'—'}｜涨跌 <span class="${x.pct>=0?'good':'bad'}">${x.pct>=0?'+':''}${Number(x.pct||0).toFixed(2)}%</span>｜成交 ${x.amount_yi}亿｜主力 ${x.main_yi>=0?'+':''}${x.main_yi}亿</div><div class="tiny ${cls}" style="margin-top:3px">${label}｜异动分 ${score}</div><div>${themes.map(t=>`<span class="event-tag">${t}</span>`).join('')}</div><div class="newsline tiny">📰 可能利好：<a target="_blank" href="${newsSearchUrl(x.boardName||x.name)}">${newsHeadline(x.boardName||x.name)}</a></div></div>`;
  }).join(''):'<div class="empty">资金异动方向暂未拉到成分股</div>';
 }
 async function runCapitalRadar(manual=false){
@@ -473,7 +493,7 @@ async function runCapitalRadar(manual=false){
 
 function renderSectorFlow(sf){
  $('sectorTime').textContent=sf.updated_at?`${sf.stale?'旧数据｜':''}${sf.updated_at}`:'板块资金源暂不可用';
- const secRow=(x,positive)=>`<div class="sector-row"><div><span class="sector-name">${x.name}</span><br><span class="tiny">${x.pct>=0?'+':''}${x.pct}%</span></div><div class="sector-money ${positive?'good':'bad'}">${x.main_yi>=0?'+':''}${x.main_yi}亿</div><div class="sector-pct tiny">${x.main_pct>=0?'+':''}${x.main_pct}%</div></div>`;
+ const secRow=(x,positive)=>`<div class="sector-row"><div><span class="sector-name">${x.name}</span><br><span class="tiny">${x.pct>=0?'+':''}${x.pct}%</span></div><div class="sector-money ${positive?'good':'bad'}">${x.main_yi>=0?'+':''}${x.main_yi}亿</div><div class="sector-pct tiny">${x.main_pct>=0?'+':''}${x.main_pct}%</div><div class="newsline tiny">📰 可能利好：<a target="_blank" href="${newsSearchUrl(x.name)}">${newsHeadline(x.name)}</a></div></div>`;
  $('sectorIn').innerHTML=(sf.inflow||[]).length?(sf.inflow||[]).slice(0,8).map(x=>secRow(x,true)).join(''):'<div class="empty">暂无可用板块资金数据</div>';
  $('sectorOut').innerHTML=(sf.outflow||[]).length?(sf.outflow||[]).slice(0,8).map(x=>secRow(x,false)).join(''):'<div class="empty">暂无可用板块资金数据</div>';
 }
