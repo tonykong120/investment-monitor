@@ -367,6 +367,77 @@ def quick_elasticity(q):
     level="日内高弹性" if score>=68 else ("日内中弹性" if score>=45 else "日内低弹性")
     return {"score":score,"level":level,"amplitude_pct":round(amp,2)}
 
+
+def turnover_features(h):
+    """换手活跃度：高弹性短线票不能太冷。今天盘中没有完整换手时，用最近有效日K换手做代理。"""
+    turns=[x.get("turn",0) for x in h[-12:] if isinstance(x.get("turn",0),(int,float)) and x.get("turn",0)>0]
+    last=turns[-1] if turns else 0
+    avg5=mean(turns[-5:]) if turns else 0
+    avg10=mean(turns[-10:]) if turns else 0
+    score=round(clamp((avg5-1.0)*24 + (last-1.0)*10),1)
+    ok=avg5>=2.0 or last>=2.0
+    if avg5>=5 or last>=6:
+        level="活跃"
+    elif ok:
+        level="正常"
+    else:
+        level="偏低"
+    return {"last_turn":round(last,2),"avg5_turn":round(avg5,2),"avg10_turn":round(avg10,2),"score":score,"ok":ok,"level":level}
+
+def expected_upside_model(bt, elastic):
+    """5日弹性空间估计：用历史同类最大上冲 + 近期ATR/振幅合成，只用于筛选，不承诺未来收益。"""
+    hist=bt.get("avg_max_up_5d")
+    atr=elastic.get("atr14_pct") or 0
+    amp=elastic.get("avg_amp10") or 0
+    vol_space=max(atr*2.15, amp*1.55, 0)
+    if isinstance(hist,(int,float)) and hist>0:
+        est=hist*0.58 + vol_space*0.42
+        basis="历史同类最大上冲 + 近期波动"
+    else:
+        est=vol_space
+        basis="近期波动估计"
+    return {"expected_upside_5d":round(est,2),"basis":basis,"hist_max_up_5d":hist,"vol_space_5d":round(vol_space,2)}
+
+def make_high_elastic_wait_signal(q, early, elastic, rise, upside, turnover, buy_plan, market_score):
+    """高弹性待涨池：只找买点区内、还没涨飞、短线弹性够、上涨空间够的票。"""
+    est_prob=rise.get("estimated_up_5d") or 0
+    exp_up=upside.get("expected_upside_5d") or 0
+    checks={
+        "待涨概率≥60%": est_prob>=60,
+        "5日空间≥8%": exp_up>=8,
+        "已进入买点区": buy_plan.get("state")=="进入买点区",
+        "近5日未涨多": (not early.get("extended")) and early.get("ret5",99)<=6.5 and early.get("up_streak",9)<=2,
+        "换手不低": bool(turnover.get("ok")),
+        "股价5~30元": 5<=q.get("price",0)<=30,
+        "主板优先": str(q.get("code","")).startswith(("600","601","603","605","000","001","002","003")),
+        "环境不弱": market_score>=45,
+        "高弹性": elastic.get("score",0)>=60,
+    }
+    pullback_like = early.get("stage") in ("回踩确认","底部转强","潜伏蓄势") or (early.get("ret3",0)<=2.0 and abs(early.get("dist_ma5",9))<=2.5)
+    base_score=(
+        est_prob*0.22 +
+        clamp(exp_up*8)*0.24 +
+        elastic.get("score",0)*0.20 +
+        early.get("early_score",0)*0.14 +
+        turnover.get("score",0)*0.10 +
+        market_score*0.10
+    )
+    if pullback_like: base_score+=4
+    if early.get("stage")=="回踩确认": base_score+=3
+    if early.get("ret5",0)>5: base_score-=5
+    score=round(clamp(base_score),1)
+    failed=[k for k,v in checks.items() if not v]
+    qualified=not failed
+    if qualified and pullback_like:
+        label="高弹性待涨｜回踩优先"
+    elif qualified:
+        label="高弹性待涨｜买点区"
+    elif len(failed)<=2 and est_prob>=57 and exp_up>=7:
+        label="接近入池｜等确认"
+    else:
+        label="未入池"
+    return {"qualified":qualified,"score":score,"label":label,"checks":checks,"failed":failed[:5],"pullback_like":pullback_like}
+
 def backtest_stats(h, current_stage=None):
     """
     只回测“早期形态”，避免用已经涨了几天的趋势股样本来计算胜率。
@@ -649,6 +720,7 @@ def analyze(q,market_score=50,include_flow=False):
     t=technical(h)
     early=early_stage_features(h)
     elastic=elasticity_features(h)
+    turnover=turnover_features(h)
 
     liquidity=clamp(45+math.log10(max(q["amount"]/1e8,1))*28)
     anti_chase=clamp(100-max(early["ret5"],0)*8-max(early["up_streak"]-1,0)*12)
@@ -677,6 +749,8 @@ def analyze(q,market_score=50,include_flow=False):
 
     bt=backtest_stats(h,current_stage=early["stage"])
     rise=make_rise_signal(score,bt,market_score,flow_score,buy_plan["state"])
+    upside=expected_upside_model(bt,elastic)
+    wait_signal=make_high_elastic_wait_signal(q,early,elastic,rise,upside,turnover,buy_plan,market_score)
 
     # 已涨过滤器会同步压低待涨指数，避免“历史胜率高但位置太晚”
     if early["extended"]:
@@ -697,6 +771,8 @@ def analyze(q,market_score=50,include_flow=False):
 
     if early["extended"]:
         status="已涨过滤"
+    elif wait_signal.get("qualified"):
+        status="高弹性待涨"
     elif elastic["score"]>=68 and early["early_score"]>=56 and rise["index"]>=56 and buy_plan["state"]=="进入买点区":
         status="高弹性买点"
     elif elastic["score"]>=62 and early["early_score"]>=52 and rise["index"]>=52:
@@ -714,6 +790,9 @@ def analyze(q,market_score=50,include_flow=False):
         "score":round(score,1),
         "early_signal":early,
         "elasticity":elastic,
+        "turnover":turnover,
+        "upside_model":upside,
+        "wait_pool_signal":wait_signal,
         "flow_score":round(flow_score),"trend_score":round(t["trend"]),
         "volume_score":round(t["volume"]),"position_score":round(t["position"]),
         "liquidity_score":round(liquidity),"volume_ratio":round(t["vr"],2),
@@ -738,12 +817,12 @@ def main():
         if len(quotes)<2000: raise RuntimeError(f"实时行情股票数异常：{len(quotes)}，拒绝覆盖旧数据")
         by_code={x["code"]:x for x in quotes}; pcts=[x["pct"] for x in quotes]; up=sum(1 for p in pcts if p>0)/len(pcts)*100; med=median(pcts)
         market_score=round(clamp(45+(up-50)*.8+med*5)); market_state="偏强" if market_score>=65 else ("中性" if market_score>=45 else "偏弱")
-        pre=[x for x in quotes if 4<=x["price"]<=32 and x["amount"]>=1.5e8 and -4.5<=x["pct"]<=4.8]
+        pre=[x for x in quotes if 5<=x["price"]<=30 and x["amount"]>=1.5e8 and -4.5<=x["pct"]<=4.8]
         for x in pre:
             liq=clamp(40+math.log10(max(x["amount"]/1e8,1))*28); calm=clamp(100-abs(x["pct"]-1.0)*10); x["_pre"]=liq*.60+calm*.40
         pre=sorted(pre,key=lambda z:z["_pre"],reverse=True)[:60]; candidates=[]
         for x in pre: candidates.append(analyze(x,market_score=market_score,include_flow=(len(candidates)<8)))
-        candidates=sorted(candidates,key=lambda z:(0 if z.get("early_signal",{}).get("extended") else 1,z.get("elasticity",{}).get("score",0),z.get("early_signal",{}).get("early_score",0),z.get("rise_signal",{}).get("index",0)),reverse=True)
+        candidates=sorted(candidates,key=lambda z:(0 if z.get("early_signal",{}).get("extended") else 1,z.get("wait_pool_signal",{}).get("score",0),z.get("wait_pool_signal",{}).get("qualified",False),z.get("elasticity",{}).get("score",0),z.get("rise_signal",{}).get("estimated_up_5d") or 0),reverse=True)
         watch=[analyze(by_code[c],market_score=market_score,include_flow=True) for c in WATCHLIST if c in by_code]
 
         sector_flow=fetch_sector_flow()
@@ -810,19 +889,25 @@ def main():
 
         market_guidance="正常观察，优先高弹性+启动初期" if market_score>=55 else ("环境偏弱，降低仓位，只做最强1-2只" if market_score>=42 else "环境弱，少做或不做")
 
+        high_elastic_wait_pool=[x for x in candidates if x.get("wait_pool_signal",{}).get("qualified") and x.get("rise_signal",{}).get("estimated_up_5d",0)>=60 and x.get("upside_model",{}).get("expected_upside_5d",0)>=8]
+        high_elastic_wait_pool=sorted(high_elastic_wait_pool,key=lambda z:z.get("wait_pool_signal",{}).get("score",0),reverse=True)[:8]
+        base_opportunities=[x for x in candidates if x["status"] in ("高弹性待涨","高弹性买点","高弹性观察","中弹性备选") and not x.get("early_signal",{}).get("extended") and x.get("elasticity",{}).get("score",0)>=48][:5]
+        final_opportunities=(high_elastic_wait_pool[:5] if high_elastic_wait_pool else base_opportunities)
+
         data={
-            "version":"2.4","updated_at":now,
-            "data_mode":"前端实时行情层 + 资金异动反推雷达 + 定时模型层",
+            "version":"2.5","updated_at":now,
+            "data_mode":"高弹性待涨池 + 前端实时行情层 + 资金异动反推雷达 + 定时模型层",
             "refresh_note":"前端行情约10秒；模型依赖后台扫描任务，存在任务排队延迟",
             "market":{"score":market_score,"state":market_state,"guidance":market_guidance,"up_ratio":round(up,1),"median_pct":round(med,2),"universe":len(quotes)},
-            "opportunities":[x for x in candidates if x["status"] in ("高弹性买点","高弹性观察","中弹性备选") and not x.get("early_signal",{}).get("extended") and x.get("elasticity",{}).get("score",0)>=48][:5],
+            "opportunities":final_opportunities,
+            "high_elastic_wait_pool":high_elastic_wait_pool,
             "watchlist":watch,
             "candidates":candidates[:25],
             "avoid_list":avoid_pool,
             "sector_flow":sector_flow,
             "source_health":source_health,
             "quote_snapshot":quote_snapshot,
-            "rules":{"price":"4-32元","amount":"≥1.5亿元","day_pct":"-4.5%~+4.8%","excluded":"科创/创业/北交/ST/退市","holding":"1-5个交易日","focus":"高弹性优先：ATR14 / 近10日振幅 / 绝对涨跌","anti_chase":"近5日>8% / 近10日>13% / 连涨≥3天 / 距MA5>4.5% 直接过滤"}
+            "rules":{"price":"5-30元","amount":"≥1.5亿元","day_pct":"-4.5%~+4.8%","excluded":"科创/创业/北交/ST/退市","holding":"1-5个交易日","focus":"高弹性待涨池：待涨≥60% / 5日空间≥8% / 买点区 / 换手不低 / 板块环境不弱","anti_chase":"近5日>8% / 近10日>13% / 连涨≥3天 / 距MA5>4.5% 直接过滤"}
         }
         Path("data").mkdir(exist_ok=True)
         Path("data/latest.json").write_text(json.dumps(data,ensure_ascii=False,separators=(",",":")),encoding="utf-8")
