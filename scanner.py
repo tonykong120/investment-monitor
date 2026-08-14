@@ -895,7 +895,7 @@ def main():
         final_opportunities=(high_elastic_wait_pool[:5] if high_elastic_wait_pool else base_opportunities)
 
         data={
-            "version":"2.13","updated_at":now,
+            "version":"2.14","updated_at":now,
             "data_mode":"高弹性待涨池 + 前端实时行情层 + 资金异动反推雷达 + 定时模型层",
             "refresh_note":"前端行情约5秒；模型依赖后台扫描任务，存在任务排队延迟",
             "market":{"score":market_score,"state":market_state,"guidance":market_guidance,"up_ratio":round(up,1),"median_pct":round(med,2),"universe":len(quotes)},
