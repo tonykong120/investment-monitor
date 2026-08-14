@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>短线机会工作台 V2.10</title>
+<title>短线机会工作台 V2.11</title>
 <style>
 :root{
   --bg:#05080d;
@@ -191,6 +191,17 @@ body{font-size:13px}
   .sector-action{text-align:left}
 }
 
+
+/* V2.11 宽屏增强：取消左右大空隙 */
+.app{width:100%!important;max-width:none!important;margin:0!important;padding:20px 28px!important}
+.stage{width:100%!important;grid-template-columns:238px minmax(0,1fr)!important}
+.main{min-width:0!important;padding:26px 28px!important}
+.layout{grid-template-columns:1.35fr .65fr!important}
+.layout-wide{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.header-actions,.searchbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+#overviewWaitPool .stock-card,#overviewLiveRadar .stock-card{font-size:12px}
+@media(max-width:1180px){.stage{grid-template-columns:1fr!important}.layout,.layout-wide{grid-template-columns:1fr!important}}
+
 </style>
 </head>
 <body>
@@ -214,20 +225,16 @@ body{font-size:13px}
         <button class="nav-btn" data-view="live"><span class="nav-dot">④</span>实时雷达</button>
         <button class="nav-btn" data-view="watch"><span class="nav-dot">⑤</span>自选监控</button>
       </div>
-      <div class="note" style="position:absolute;bottom:24px;left:22px;right:22px">盘中主看：今日机会 → 板块资金 → 实时雷达 → 自选。</div>
+      <div class="note" style="position:absolute;bottom:24px;left:22px;right:22px">盘中主看：今日机会 → 高弹性池 → 板块资金 → 实时雷达。</div>
     </aside>
 
     <main class="main">
       <div class="main-head">
         <div class="main-title">
           <h1 id="pageTitle">总览</h1>
-          <p id="pageSub">暗色交易台版｜今日机会前置｜板块资金卡片化</p>
+          <p id="pageSub">宽屏交易台版｜总览强化｜实时雷达前置</p>
         </div>
-        <div class="searchbar">
-          <input id="watchInput" placeholder="添加自选代码，如 600105">
-          <button class="cyan" onclick="addWatch()">添加</button>
-          <button class="ghost" onclick="refreshAll(true)">刷新</button>
-        </div>
+        <div class="searchbar"><span class="badge" id="staleBadge">后台模型检测中</span><button class="ghost" onclick="refreshAll(true)">刷新数据</button></div>
       </div>
 
       <section id="view-overview" class="view active">
@@ -242,7 +249,19 @@ body{font-size:13px}
         <section class="panel">
           <div class="panel-head"><div><h2>今日机会速览</h2><div class="sub">放在第二优先级：先看可做票，再看板块与实时异动。</div></div><button class="ghost" onclick="showView('opportunity')">查看详情</button></div>
           <div id="overviewOpps" class="cards"><div class="empty">读取中…</div></div>
-        </section>
+        
+</section>
+
+        <div class="layout-wide">
+          <section class="panel">
+            <div class="panel-head"><div><h2>高弹性待涨池</h2><div class="sub">总览也显示严筛池：待涨、空间、买点、换手都要满足。</div></div><button class="ghost" onclick="showView('opportunity')">全部</button></div>
+            <div id="overviewWaitPool" class="cards"><div class="empty">等待高弹性待涨池数据…</div></div>
+          </section>
+          <section class="panel">
+            <div class="panel-head"><div><h2>实时雷达</h2><div class="sub">总览直接看前 5 只实时异动，不用切页。</div></div><span class="badge" id="rtTimeOverview">—</span></div>
+            <div id="overviewLiveRadar" class="cards"><div class="empty">正在采样实时行情…</div></div>
+          </section>
+        </div>
 
         <div class="layout">
           <div>
@@ -299,7 +318,7 @@ body{font-size:13px}
 
       <section id="view-watch" class="view">
         <section class="panel">
-          <div class="panel-head"><div><h2>自选监控</h2><div class="sub">添加后进入实时雷达，不在后台深度池也会有实时价格。</div></div><span class="badge" id="watchCount">—</span></div>
+          <div class="panel-head"><div><h2>自选监控</h2><div class="sub">添加入口移到这里，不占总览空间。添加后进入实时雷达。</div></div><div class="header-actions"><input id="watchInput" placeholder="输入 6 位代码，如 600105"><button class="cyan" onclick="addWatch()">添加</button><span class="badge" id="watchCount">—</span></div></div>
           <div id="watchList" class="cards"><div class="empty">暂无自选</div></div>
         </section>
 
@@ -531,5 +550,60 @@ setInterval(()=>loadData(false),60000);
 setInterval(()=>tick(false),5000);
 setInterval(()=>loadSector(false),30000);
 </script>
+
+<script id="v211-js">
+(function(){
+  function $(s){return document.querySelector(s)}
+  function modelAgeText(updated){
+    if(!updated)return ['未知','warn'];
+    const t=new Date(String(updated).replace(/-/g,'/'));
+    if(isNaN(t.getTime()))return ['未知','warn'];
+    const mins=(Date.now()-t.getTime())/60000;
+    if(mins<8)return [`${Math.max(1,Math.round(mins))}分钟前`,'good'];
+    if(mins<25)return [`${Math.round(mins)}分钟前｜偏慢`,'warn'];
+    return [`${Math.round(mins)}分钟前｜过慢，盘中看实时雷达`,'bad'];
+  }
+  window.v211Enhance=function(){
+    try{
+      if(window.DATA&&DATA.updated_at&&$('#staleBadge')){
+        const age=modelAgeText(DATA.updated_at);
+        $('#staleBadge').className='badge '+age[1];
+        $('#staleBadge').textContent='后台模型 '+age[0];
+      }
+      if(window.DATA&&$('#overviewWaitPool')){
+        const arr=DATA.high_elastic_wait_pool||[];
+        $('#overviewWaitPool').innerHTML=arr.length?arr.slice(0,3).map(stockCard).join(''):'<div class="empty">暂无满足严筛的高弹性待涨票。</div>';
+      }
+      if($('#overviewLiveRadar')&&$('#liveRadar')){
+        let cards=[...$('#liveRadar').querySelectorAll('.stock-card')].slice(0,5);
+        if(cards.length){
+          $('#overviewLiveRadar').innerHTML=cards.map(x=>x.outerHTML).join('');
+          if($('#rtTimeOverview'))$('#rtTimeOverview').textContent=new Date().toLocaleTimeString('zh-CN',{hour12:false});
+        }else if($('#liveRadar').innerHTML.trim()){
+          $('#overviewLiveRadar').innerHTML=$('#liveRadar').innerHTML;
+        }
+      }
+    }catch(e){}
+  };
+  const oldLoad=window.loadData;
+  if(typeof oldLoad==='function'){
+    window.loadData=async function(){
+      const r=await oldLoad.apply(this,arguments);
+      setTimeout(window.v211Enhance,50);
+      return r;
+    };
+  }
+  const oldRenderLive=window.renderLiveRadar;
+  if(typeof oldRenderLive==='function'){
+    window.renderLiveRadar=function(){
+      const r=oldRenderLive.apply(this,arguments);
+      setTimeout(window.v211Enhance,50);
+      return r;
+    };
+  }
+  setInterval(window.v211Enhance,5000);
+})();
+</script>
+
 </body>
 </html>
