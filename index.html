@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>短线机会工作台 V2.11</title>
+<title>短线机会工作台 V2.12</title>
 <style>
 :root{
   --bg:#05080d;
@@ -202,6 +202,35 @@ body{font-size:13px}
 #overviewWaitPool .stock-card,#overviewLiveRadar .stock-card{font-size:12px}
 @media(max-width:1180px){.stage{grid-template-columns:1fr!important}.layout,.layout-wide{grid-template-columns:1fr!important}}
 
+
+/* V2.12 总览模块拖拽 + 今日机会增强 */
+.overview-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(520px,1fr));
+  gap:16px;
+  align-items:start;
+}
+.overview-module{cursor:grab}
+.overview-module:active{cursor:grabbing}
+.overview-module.dragging{opacity:.45;outline:1px dashed rgba(94,230,255,.55)}
+.module-handle{font-size:11px;color:#6f7f8f;margin-left:8px}
+.detail-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin-top:12px}
+.detail-box{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:8px 9px}
+.detail-box .k{font-size:10px;color:#8190a0}
+.detail-box .v{font-size:12px;font-weight:900;margin-top:2px;word-break:break-all}
+.card-section{margin-top:11px;border-top:1px solid rgba(255,255,255,.06);padding-top:10px}
+.card-section-title{font-size:11px;color:#7feeff;font-weight:900;margin-bottom:6px}
+.signal-list{display:flex;gap:6px;flex-wrap:wrap}
+.signal-chip{font-size:11px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);border-radius:999px;padding:4px 8px;color:#a8b4c2}
+.signal-chip.warn{color:#ffd166;border-color:rgba(255,209,102,.2);background:rgba(255,209,102,.08)}
+.trade-plan{display:grid;grid-template-columns:1.1fr .9fr;gap:10px;margin-top:10px}
+.trade-note{font-size:11px;color:#95a3b3;line-height:1.55}
+details.more{margin-top:10px}
+details.more summary{cursor:pointer;color:#7feeff;font-weight:900;font-size:12px}
+details.more[open] summary{margin-bottom:8px}
+@media(max-width:1100px){.overview-grid{grid-template-columns:1fr}.detail-grid{grid-template-columns:repeat(3,1fr)}.trade-plan{grid-template-columns:1fr}}
+@media(max-width:700px){.detail-grid{grid-template-columns:repeat(2,1fr)}}
+
 </style>
 </head>
 <body>
@@ -246,62 +275,38 @@ body{font-size:13px}
         </div>
 
         
-        <section class="panel">
-          <div class="panel-head"><div><h2>今日机会速览</h2><div class="sub">放在第二优先级：先看可做票，再看板块与实时异动。</div></div><button class="ghost" onclick="showView('opportunity')">查看详情</button></div>
-          <div id="overviewOpps" class="cards"><div class="empty">读取中…</div></div>
-        
-</section>
+        <div class="overview-grid" id="overviewGrid">
+          <section class="panel overview-module" draggable="true" data-module="overviewOpps">
+            <div class="panel-head"><div><h2>今日机会速览 <span class="module-handle">拖动排序</span></h2><div class="sub">放在第一优先级：保留具体买点、待涨、弹性、止损、目标、回测和资金状态。</div></div><button class="ghost" onclick="showView('opportunity')">查看详情</button></div>
+            <div id="overviewOpps" class="cards"><div class="empty">读取中…</div></div>
+          </section>
 
-        <div class="layout-wide">
-          <section class="panel">
-            <div class="panel-head"><div><h2>高弹性待涨池</h2><div class="sub">总览也显示严筛池：待涨、空间、买点、换手都要满足。</div></div><button class="ghost" onclick="showView('opportunity')">全部</button></div>
+          <section class="panel overview-module" draggable="true" data-module="overviewWait">
+            <div class="panel-head"><div><h2>高弹性待涨池 <span class="module-handle">拖动排序</span></h2><div class="sub">总览也显示严筛池：待涨、空间、买点、换手都要满足。</div></div><button class="ghost" onclick="showView('opportunity')">全部</button></div>
             <div id="overviewWaitPool" class="cards"><div class="empty">等待高弹性待涨池数据…</div></div>
           </section>
-          <section class="panel">
-            <div class="panel-head"><div><h2>实时雷达</h2><div class="sub">总览直接看前 5 只实时异动，不用切页。</div></div><span class="badge" id="rtTimeOverview">—</span></div>
+
+          <section class="panel overview-module" draggable="true" data-module="overviewLive">
+            <div class="panel-head"><div><h2>实时雷达 <span class="module-handle">拖动排序</span></h2><div class="sub">总览直接看前 5 只实时异动，不用切页。</div></div><span class="badge" id="rtTimeOverview">—</span></div>
             <div id="overviewLiveRadar" class="cards"><div class="empty">正在采样实时行情…</div></div>
           </section>
+
+          <section class="panel overview-module" draggable="true" data-module="overviewTrend">
+            <div class="panel-head"><div><h2>资金趋势感知 <span class="module-handle">拖动排序</span></h2><div class="sub">用来呈现今日机会与实时强弱，不是收益承诺。</div></div><span class="badge" id="marketAdvice">—</span></div>
+            <div class="spark">
+              <svg viewBox="0 0 800 160" preserveAspectRatio="none">
+                <defs><linearGradient id="g" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#5ee6ff" stop-opacity=".65"/><stop offset="1" stop-color="#5ee6ff" stop-opacity="0"/></linearGradient></defs>
+                <path d="M0,125 C80,105 120,112 180,90 C260,62 320,78 390,54 C480,28 570,50 640,32 C720,13 760,22 800,7 L800,160 L0,160 Z" fill="url(#g)"/>
+                <path d="M0,125 C80,105 120,112 180,90 C260,62 320,78 390,54 C480,28 570,50 640,32 C720,13 760,22 800,7" fill="none" stroke="#5ee6ff" stroke-width="3"/>
+              </svg>
+            </div>
+          </section>
+
+          <section class="panel overview-module" draggable="true" data-module="overviewSector">
+            <div class="panel-head"><div><h2>板块资金 Top <span class="module-handle">拖动排序</span></h2><div class="sub">新闻线索上下排版，不挤。</div></div><button class="ghost" onclick="loadSector(true)">刷新板块</button></div>
+            <div id="overviewSector" class="sector-cards"><div class="empty">读取中…</div></div>
+          </section>
         </div>
-
-        <div class="layout">
-          <div>
-            <section class="panel">
-              <div class="panel-head"><div><h2>资金趋势感知</h2><div class="sub">用来呈现今日机会与实时强弱，不是收益承诺。</div></div><span class="badge" id="marketAdvice">—</span></div>
-              <div class="spark">
-                <svg viewBox="0 0 800 160" preserveAspectRatio="none">
-                  <defs><linearGradient id="g" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#5ee6ff" stop-opacity=".65"/><stop offset="1" stop-color="#5ee6ff" stop-opacity="0"/></linearGradient></defs>
-                  <path id="areaPath" d="M0,125 C80,105 120,112 180,90 C260,62 320,78 390,54 C480,28 570,50 640,32 C720,13 760,22 800,7 L800,160 L0,160 Z" fill="url(#g)"/>
-                  <path id="linePath" d="M0,125 C80,105 120,112 180,90 C260,62 320,78 390,54 C480,28 570,50 640,32 C720,13 760,22 800,7" fill="none" stroke="#5ee6ff" stroke-width="3"/>
-                </svg>
-              </div>
-            </section>
-          </div>
-
-          <div>
-            <section class="panel">
-              <div class="panel-head"><div><h2>板块资金 Top</h2><div class="sub">上下排版：新闻线索不再挤在表格里。</div></div><button class="ghost" onclick="loadSector(true)">刷新板块</button></div>
-              <div id="overviewSector" class="sector-cards"><div class="empty">读取中…</div></div>
-            </section>
-            <section class="panel">
-              <div class="panel-head"><div><h2>自选状态</h2><div class="sub">实时价格与买点关系。</div></div><button class="ghost" onclick="showView('watch')">管理</button></div>
-              <div id="overviewWatch" class="cards"><div class="empty">暂无自选</div></div>
-            </section>
-          </div>
-        </div>
-      </section>
-
-      <section id="view-live" class="view">
-        <section class="panel">
-          <div class="panel-head"><div><h2>分钟级异动雷达</h2><div class="sub">实时采样：价格、1/3/5分钟涨跌、5分钟成交额增量、买点状态。</div></div><span class="badge" id="rtTime">—</span></div>
-          <div id="liveRadar" class="table"><div class="empty">正在采样实时行情…</div></div>
-        </section>
-      </section>
-
-      <section id="view-sector" class="view">
-        <section class="panel">
-          <div class="panel-head"><div><h2>板块资金流向</h2><div class="sub">前端尝试约 30 秒更新，接口失败时保留最近一次。</div></div><span class="badge" id="sectorTime">—</span></div>
-          <div id="sectorTable" class="sector-cards"><div class="empty">读取板块资金中…</div></div>
-        </section>
       </section>
 
       <section id="view-opportunity" class="view">
@@ -399,27 +404,75 @@ function renderWaitPool(){
   $('#waitPool').innerHTML=arr.length?arr.slice(0,8).map(stockCard).join(''):'<div class="empty">暂无满足严筛的高弹性待涨票。</div>';
 }
 function stockCard(x){
-  const bp=x.buy_plan||{}, r=x.rise_signal||{}, e=x.elasticity||{}, u=x.upside_model||{}, t=x.turnover||{}, early=x.early_signal||{};
-  const q=LIVE[String(x.code)]||{};
-  const price=q.price??x.price;
-  const pp=q.pct??x.pct;
-  const reasons=[...(x.reasons||[]),...(x.warnings||[]).map(v=>'⚠ '+v)].slice(0,5).join(' / ');
+  const bp=x.buy_plan||{},r=x.rise_signal||{},e=x.elasticity||{},u=x.upside_model||{},t=x.turnover||{},early=x.early_signal||{},bt=x.backtest||{},flow=x.fund_flow||{};
+  const q=LIVE[String(x.code)]||{},price=q.price??x.price,pp=q.pct??x.pct,amount=q.amount_yi??x.amount_yi;
+  const reasons=(x.reasons||[]).slice(0,6);
+  const warnings=(x.warnings||[]).slice(0,5);
+  const liveTag=q.price?'<span class="badge good">实时</span>':'<span class="badge warn">后台</span>';
+  const flowText=flow.available?(flow.main_yi!=null?yi(flow.main_yi):'已接入'):'未接入';
+  const buyText=bp.buy_low!=null?`${bp.buy_low} ~ ${bp.buy_high}`:'—';
+  const targetText=`${x.target1??'—'} / ${x.target2??'—'}`;
+  const riskReward=x.rr1??'—';
   return `<div class="stock-card">
     <div class="stock-top">
-      <div><div class="name">${x.name} <span class="mut">${x.code}</span></div><div class="mut">${x.status||'—'} ｜ ${e.level||'—'} ｜ ${x.quote_source||''}</div></div>
-      <div style="text-align:right"><div class="score">${x.short_score??x.score??'—'}</div><div class="${(pp||0)>=0?'good':'bad'}">${price??'—'} ${pct(pp)}</div></div>
+      <div>
+        <div class="name">${x.name} <span class="mut">${x.code}</span> ${liveTag}</div>
+        <div class="mut">${x.status||'—'} ｜ ${early.stage||'—'} ｜ ${e.level||'—'} ｜ ${x.quote_source||''}</div>
+      </div>
+      <div style="text-align:right">
+        <div class="score">${x.short_score??x.score??'—'}</div>
+        <div class="${(pp||0)>=0?'good':'bad'}">${price??'—'} ${pct(pp)}</div>
+      </div>
     </div>
-    <div class="info-grid">
-      <div class="info"><div class="k">待涨估计</div><div class="v">${r.estimated_up_5d??'—'}%</div></div>
-      <div class="info"><div class="k">5日空间</div><div class="v">${u.expected_upside_5d??'—'}%</div></div>
-      <div class="info"><div class="k">买点区</div><div class="v">${bp.buy_low??'—'}~${bp.buy_high??'—'}</div></div>
-      <div class="info"><div class="k">止损 / 目标</div><div class="v">${x.stop??'—'} / ${x.target1??'—'}</div></div>
-      <div class="info"><div class="k">近5日</div><div class="v">${pct(early.ret5)}</div></div>
-      <div class="info"><div class="k">换手</div><div class="v">${t.avg5_turn??'—'}%</div></div>
-      <div class="info"><div class="k">买点状态</div><div class="v">${bp.state??'—'}</div></div>
-      <div class="info"><div class="k">样本</div><div class="v">${(x.backtest||{}).sample_size??'—'}次</div></div>
+
+    <div class="detail-grid">
+      <div class="detail-box"><div class="k">计划买入区</div><div class="v">${buyText}</div></div>
+      <div class="detail-box"><div class="k">理想价 / 不追</div><div class="v">${bp.ideal_buy??'—'} / ${bp.no_chase??'—'}</div></div>
+      <div class="detail-box"><div class="k">止损 / 目标</div><div class="v">${x.stop??'—'} / ${targetText}</div></div>
+      <div class="detail-box"><div class="k">待涨估计</div><div class="v">${r.estimated_up_5d??'—'}%</div></div>
+      <div class="detail-box"><div class="k">待涨等级</div><div class="v">${r.level??'—'} ${r.index??''}</div></div>
+      <div class="detail-box"><div class="k">5日空间</div><div class="v">${u.expected_upside_5d??'—'}%</div></div>
+
+      <div class="detail-box"><div class="k">弹性评分</div><div class="v">${e.score??'—'}｜${e.level??'—'}</div></div>
+      <div class="detail-box"><div class="k">ATR / 振幅</div><div class="v">${e.atr14_pct??'—'}% / ${e.avg_amp10??'—'}%</div></div>
+      <div class="detail-box"><div class="k">近3/5/10日</div><div class="v">${pct(early.ret3)} / ${pct(early.ret5)} / ${pct(early.ret10)}</div></div>
+      <div class="detail-box"><div class="k">换手</div><div class="v">${t.avg5_turn??'—'}%｜${t.level??'—'}</div></div>
+      <div class="detail-box"><div class="k">成交额</div><div class="v">${amount??'—'}亿</div></div>
+      <div class="detail-box"><div class="k">资金</div><div class="v">${flowText}</div></div>
     </div>
-    <div class="reason">${reasons||'暂无额外信号'}</div>
+
+    <div class="trade-plan">
+      <div class="detail-box">
+        <div class="k">交易计划</div>
+        <div class="v">${bp.state??'—'}｜${bp.type??'—'}</div>
+        <div class="trade-note">盈亏比 ${riskReward}｜若进入买点区且实时雷达未转弱，优先盯 1/3/5 分钟异动；急拉超过不追线则不追。</div>
+      </div>
+      <div class="detail-box">
+        <div class="k">回测统计</div>
+        <div class="v">样本 ${bt.sample_size??'—'}｜${bt.confidence??'—'}</div>
+        <div class="trade-note">5日上涨率 ${bt.up_rate_5d??'—'}%｜目标胜率 ${bt.win_rate_5d??'—'}%｜5日均收益 ${bt.avg_5d_return??'—'}%</div>
+      </div>
+    </div>
+
+    <div class="card-section">
+      <div class="card-section-title">信号原因</div>
+      <div class="signal-list">
+        ${(reasons.length?reasons:['暂无额外信号']).map(v=>`<span class="signal-chip">${v}</span>`).join('')}
+        ${warnings.map(v=>`<span class="signal-chip warn">⚠ ${v}</span>`).join('')}
+      </div>
+    </div>
+
+    <details class="more">
+      <summary>更多细节</summary>
+      <div class="detail-grid">
+        <div class="detail-box"><div class="k">20日位置</div><div class="v">${early.position20??'—'}%</div></div>
+        <div class="detail-box"><div class="k">距5日线</div><div class="v">${early.dist_ma5??'—'}%</div></div>
+        <div class="detail-box"><div class="k">连涨</div><div class="v">${early.up_streak??'—'}天</div></div>
+        <div class="detail-box"><div class="k">5日最大上冲</div><div class="v">${bt.avg_max_up_5d??'—'}%</div></div>
+        <div class="detail-box"><div class="k">5日最大回撤</div><div class="v">${bt.avg_max_drawdown_5d??'—'}%</div></div>
+        <div class="detail-box"><div class="k">建议</div><div class="v">${r.conclusion??'—'}</div></div>
+      </div>
+    </details>
   </div>`;
 }
 function renderRisk(){
@@ -602,6 +655,55 @@ setInterval(()=>loadSector(false),30000);
     };
   }
   setInterval(window.v211Enhance,5000);
+})();
+</script>
+
+
+<script id="v212-drag-js">
+(function(){
+  function applyOrder(){
+    const grid=document.getElementById('overviewGrid');
+    if(!grid)return;
+    let order=[];
+    try{order=JSON.parse(localStorage.getItem('overviewModuleOrder')||'[]')}catch(e){}
+    if(order.length){
+      const map={};
+      [...grid.children].forEach(el=>map[el.dataset.module]=el);
+      order.forEach(k=>{if(map[k])grid.appendChild(map[k])});
+    }
+  }
+  function saveOrder(){
+    const grid=document.getElementById('overviewGrid');
+    if(!grid)return;
+    localStorage.setItem('overviewModuleOrder',JSON.stringify([...grid.children].map(x=>x.dataset.module)));
+  }
+  function initDrag(){
+    const grid=document.getElementById('overviewGrid');
+    if(!grid||grid.dataset.dragReady)return;
+    grid.dataset.dragReady='1';
+    let dragging=null;
+    grid.addEventListener('dragstart',e=>{
+      const el=e.target.closest('.overview-module');
+      if(!el)return;
+      dragging=el; el.classList.add('dragging');
+      e.dataTransfer.effectAllowed='move';
+    });
+    grid.addEventListener('dragend',e=>{
+      if(dragging)dragging.classList.remove('dragging');
+      dragging=null; saveOrder();
+    });
+    grid.addEventListener('dragover',e=>{
+      e.preventDefault();
+      const after=[...grid.querySelectorAll('.overview-module:not(.dragging)')].find(el=>{
+        const r=el.getBoundingClientRect();
+        return e.clientY < r.top + r.height/2 && e.clientX < r.right;
+      });
+      if(!dragging)return;
+      if(after)grid.insertBefore(dragging,after); else grid.appendChild(dragging);
+    });
+  }
+  document.addEventListener('DOMContentLoaded',()=>{applyOrder();initDrag();});
+  setTimeout(()=>{applyOrder();initDrag();},800);
 })();
 </script>
 
