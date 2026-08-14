@@ -1,6 +1,6 @@
 <!doctype html><html lang="zh-CN"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>短线机会工作台 V2.6</title>
+<title>短线机会工作台 V2.7</title>
 <style>
 :root{--bg:#0b0d10;--card:#14171c;--card2:#1a1e24;--line:#292f38;--txt:#f2f4f7;--mut:#9098a4;--g:#49d17d;--y:#efb64a;--r:#ef6965;--b:#79a1ff}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font:14px/1.55 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
@@ -50,15 +50,21 @@ input{background:#111419;color:white;border:1px solid var(--line);border-radius:
 
 .newsline{margin-top:5px;color:#b7c6da}.newsline a{color:#9bd0ff;text-decoration:none}.newsline a:hover{text-decoration:underline}
 .sector-row .newsline{grid-column:1 / -1;margin-top:2px}
-</style></head><body><div class="wrap">
+</style>
+<style id="v27-realtime-model-style">
+#v27RealtimeModelPanel{max-width:1500px;margin:12px auto;padding:14px 16px;border-radius:16px;border:1px solid #244f78;background:linear-gradient(180deg,#10233a,#0f1724);color:#e6edf6;font:14px/1.55 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+#v27RealtimeModelPanel *{box-sizing:border-box}.v27-head{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}.v27-title{font-size:18px;font-weight:900}.v27-pill{display:inline-block;border-radius:999px;background:#152d49;border:1px solid #2e5c8b;padding:5px 9px;margin:2px;color:#bfe0ff}.v27-btn{background:#2563eb;border:1px solid #3b82f6;color:white;border-radius:10px;padding:7px 10px;cursor:pointer}.v27-grid{display:grid;grid-template-columns:1.2fr .65fr .7fr .8fr .8fr .95fr;gap:8px;margin-top:10px}.v27-row{display:contents}.v27-cell{border-top:1px solid #243044;padding:8px 6px;min-height:38px}.v27-h{color:#8fa1b6;font-size:12px;border-top:0}.v27-good{color:#39d98a}.v27-bad{color:#ff6b6b}.v27-warn{color:#ffd166}.v27-blue{color:#72b7ff}.v27-sig{display:inline-block;border-radius:999px;padding:2px 8px;border:1px solid #2d6a4f;background:#143321;color:#8cf0b6}.v27-sig.warn{border-color:#6f5a20;background:#332b14;color:#ffe08a}.v27-sig.bad{border-color:#6b2931;background:#33151b;color:#ff9aa8}.v27-note{color:#8fa1b6;font-size:12px;margin-top:8px}.v27-sub{color:#8fa1b6;font-size:12px}@media(max-width:900px){.v27-grid{display:block}.v27-row{display:block;border-top:1px solid #243044;padding:8px 0}.v27-cell{border-top:0;display:inline-block;width:48%;vertical-align:top}.v27-h{display:none}}
+</style>
+
+</head><body><div class="wrap">
 <div class="top">
- <div><h1>⚡ 短线机会工作台 V2.6</h1><div class="sub">短波段模式｜板块资金前置｜新闻线索｜高弹性待涨池｜前端实时行情约10秒</div></div>
- <div class="actions"><span class="speed" id="liveClock">实时行情：—</span><span class="speed" id="modelClock">模型：—</span><button onclick="loadData(true)">刷新模型结果</button></div>
+ <div><h1>⚡ 短线机会工作台 V2.7</h1><div class="sub">短波段模式｜板块资金前置｜新闻线索｜高弹性待涨池｜前端实时行情约10秒</div></div>
+ <div class="actions"><span class="speed" id="liveClock">实时行情：—</span><span class="speed" id="modelClock">后台模型：—</span><button onclick="loadData(true)">刷新后台模型结果</button></div>
 </div>
 <div class="panel banner"><div id="status">读取最新扫描结果…</div><div id="health" class="health"></div></div>
 <div class="panel" style="margin-bottom:12px;padding:10px 14px">
   <div class="tiny">⚡ <b>短波段逻辑：</b>高弹性优先，但高弹性 ≠ 一定上涨。必须同时满足“没涨多 + 早期位置 + 待涨不弱”。</div>
-  <div class="tiny" style="margin-top:4px">高弹性：历史ATR/振幅大，1～2天更容易拉开幅度；中弹性：适合2～5日；低弹性：短线效率偏低。V2.6保留“高弹性待涨池”，并前置板块资金/新闻线索：待涨≥60%、5日空间≥8%、已进入买点区、换手不低、板块/环境不弱，优先回踩确认。</div>
+  <div class="tiny" style="margin-top:4px">高弹性：历史ATR/振幅大，1～2天更容易拉开幅度；中弹性：适合2～5日；低弹性：短线效率偏低。V2.7保留“高弹性待涨池”，并前置板块资金/新闻线索：待涨≥60%、5日空间≥8%、已进入买点区、换手不低、板块/环境不弱，优先回踩确认。</div>
 </div>
 
 <section class="panel">
@@ -131,7 +137,7 @@ input{background:#111419;color:white;border:1px solid var(--line);border-radius:
 </div>
 
 <div class="grid2">
-<!-- 候选池已按V2.6移除，保留隐藏tbody避免旧JS报错 --><table style="display:none"><tbody id="tbody"></tbody></table>
+<!-- 候选池已按V2.7移除，保留隐藏tbody避免旧JS报错 --><table style="display:none"><tbody id="tbody"></tbody></table>
 <section class="panel"><h2>🧭 使用逻辑</h2><div class="explainbox tiny">短线优先级：板块资金流入 → 资金异动新闻线索 → 高弹性待涨池 → 回踩/启动初期 → 买点区内 → 止损明确。弹性大代表涨跌都快，所以必须配合“不追价线”和止损。</div><div class="metrics"><div class="metric"><div class="big">1-3天</div><div class="mut">高弹性优先周期</div></div><div class="metric"><div class="big">3-5天</div><div class="mut">中弹性波段周期</div></div><div class="metric"><div class="big">不追</div><div class="mut">涨多/离均线远</div></div><div class="metric"><div class="big">TOP5</div><div class="mut">宁缺毋滥</div></div></div></section>
 </div></div>
 
@@ -552,7 +558,7 @@ function renderAvoidList(list){
 function renderMain(){
  if(!DATA)return;
  const d=DATA;
- $('status').innerHTML=`V${d.version||'—'}　模型扫描 <b>${d.updated_at}</b>　｜　股票池 ${d.market.universe} 只　｜　${d.data_mode||'行情层'}`; $('modelClock').textContent='模型：'+(d.updated_at||'—');
+ $('status').innerHTML=`V${d.version||'—'}　模型扫描 <b>${d.updated_at}</b>　｜　股票池 ${d.market.universe} 只　｜　${d.data_mode||'行情层'}`; $('modelClock').textContent='后台模型：'+(d.updated_at||'—');
  $('mScore').textContent=d.market.score+'/100'; $('mState').textContent=d.market.state||'—'; $('mUp').textContent=d.market.up_ratio+'%'; $('mMed').textContent=(d.market.median_pct>=0?'+':'')+d.market.median_pct+'%'; $('marketGuide').textContent='短线建议：'+(d.market.guidance||'—');
  const h=d.source_health||{}; $('health').innerHTML=Object.values(h).map(x=>`<span><i class="dot ${x.ok?'':'off'}"></i>${x.role}</span>`).join('');
  $('opps').innerHTML=(d.opportunities||[]).length?d.opportunities.map((x,i)=>stockCard(x,i+1)).join(''):'<div class="empty">没有达到阈值的机会。今天可以不做。</div>';
@@ -634,4 +640,26 @@ loadData();
 setInterval(refreshLiveQuotes,10000);
 setInterval(()=>loadData(false),60000);
 setInterval(()=>runCapitalRadar(false),35000);
-</script></body></html>
+</script>
+<script id="v27-realtime-model-js">
+(function(){
+  if(window.__v27RealtimeModelLoaded) return; window.__v27RealtimeModelLoaded=true;
+  let BASE_DATA={},BASE_ITEMS={},LIVE={},HIST={},lastBase=0;
+  const id=x=>document.getElementById(x); const nf=v=>(v==null||isNaN(v))?'—':Number(v).toFixed(2); const pct=v=>(v==null||isNaN(v))?'—':((Number(v)>=0?'+':'')+Number(v).toFixed(2)+'%'); const sym=c=>(String(c).startsWith('6')?'sh':'sz')+c; const tstr=()=>new Date().toLocaleTimeString('zh-CN',{hour12:false});
+  function ensure(){ if(id('v27RealtimeModelPanel')) return; const p=document.createElement('div'); p.id='v27RealtimeModelPanel'; p.innerHTML=`<div class="v27-head"><div><div class="v27-title">⚡ 实时模型层 / 盘中盯盘</div><div class="v27-note">后台模型负责全市场深度扫描；这里用实时行情每约10秒重算“已展示股票 + 自选股票”的短线信号。</div></div><div><span class="v27-pill">实时模型：<b id="v27LiveTime">—</b></span><span class="v27-pill">后台模型：<b id="v27BaseTime">—</b></span><button class="v27-btn" onclick="window.v27RealtimeTick(true)">立即刷新实时模型</button></div></div><div id="v27RealtimeRows" class="v27-grid"><div class="v27-cell v27-h">股票</div><div class="v27-cell v27-h">实时价</div><div class="v27-cell v27-h">实时短线分</div><div class="v27-cell v27-h">成交额/增量</div><div class="v27-cell v27-h">买点状态</div><div class="v27-cell v27-h">动作</div></div><div class="v27-note">说明：它不等同于全市场历史回测，但能把实时价格、成交额增量、买入区/不追线叠加到后台模型上，避免只看一小时前的模型时间。</div>`; const wrap=document.querySelector('.wrap')||document.querySelector('main')||document.body.firstElementChild; if(wrap&&wrap.parentNode)wrap.parentNode.insertBefore(p,wrap.nextSibling);else document.body.insertBefore(p,document.body.firstChild); }
+  function add(x){if(x&&x.code)BASE_ITEMS[String(x.code)]=Object.assign(BASE_ITEMS[String(x.code)]||{},x)}
+  function flatten(){BASE_ITEMS={}; ['high_elastic_wait_pool','high_elastic_pool','elastic_waiting_pool','opportunities','watchlist','risk_pool','avoid_pool','strong_money_pool','money_divergence_pool','realtime_pool'].forEach(k=>(BASE_DATA[k]||[]).forEach(add));}
+  function watchCodes(){let out=[]; ['watch','watchCodes','watchlist','WATCH'].forEach(k=>{try{let v=JSON.parse(localStorage.getItem(k)||'[]'); if(Array.isArray(v))out.push(...v.map(x=>typeof x==='string'?x:(x.code||x.symbol||'')));}catch(e){}}); out.push('600105','000021'); Object.keys(BASE_ITEMS).slice(0,80).forEach(c=>out.push(c)); return [...new Set(out.map(String).filter(c=>/^\d{6}$/.test(c)))].slice(0,100);}
+  async function loadBase(force=false){let n=Date.now(); if(!force&&n-lastBase<60000)return; try{let r=await fetch('./data/latest.json?t='+n,{cache:'no-store'}); BASE_DATA=await r.json(); lastBase=n; flatten(); if(id('v27BaseTime'))id('v27BaseTime').textContent=BASE_DATA.updated_at||'—';}catch(e){if(id('v27BaseTime'))id('v27BaseTime').textContent='读取失败';}}
+  function rec(code,q){if(!HIST[code])HIST[code]=[]; HIST[code].push({t:Date.now(),price:q.price,amount_yi:q.amount_yi}); HIST[code]=HIST[code].filter(x=>Date.now()-x.t<=10*60*1000)}
+  function ago(code,ms){let a=HIST[code]||[],target=Date.now()-ms,b=null; for(const x of a){if(x.t<=target)b=x} return b||a[0]||null}
+  function parse(codes){codes.forEach(code=>{let raw=window['v_'+sym(code)]; if(!raw)return; let a=String(raw).split('~'); if(a.length<38)return; let price=Number(a[3]),prev=Number(a[4])||price,high=Number(a[33])||price,low=Number(a[34])||price,amount_yi=Number(a[37]||0)/10000; if(!price)return; LIVE[code]={code,name:a[1]||(BASE_ITEMS[code]||{}).name||code,price,pct:Number(a[32]||((price/prev-1)*100)),high,low,prev,amount_yi,amp:(high-low)/Math.max(prev,.01)*100}; rec(code,LIVE[code]);});}
+  function fetchQ(codes){return new Promise(res=>{if(!codes.length)return res(); let chunks=[]; for(let i=0;i<codes.length;i+=60)chunks.push(codes.slice(i,i+60)); let left=chunks.length; chunks.forEach(ch=>{let sc=document.createElement('script'); sc.src='https://qt.gtimg.cn/q='+ch.map(sym).join(',')+'&_='+Date.now(); sc.charset='gbk'; let done=false; sc.onload=sc.onerror=()=>{if(done)return; done=true; parse(ch); sc.remove(); if(--left<=0)res();}; document.body.appendChild(sc); setTimeout(()=>sc.onload(),3500);});});}
+  function calc(code){let b=BASE_ITEMS[code]||{},q=LIVE[code]||{},bp=b.buy_plan||{},r=b.rise_signal||{},e=b.elasticity||{},w=b.wait_pool_signal||{}; let base=Number(b.short_score??b.score??w.score??50),up=Number(r.estimated_up_5d??r.index??50),ela=Number(e.score??50); let inBuy=bp.buy_low&&bp.buy_high&&q.price>=bp.buy_low&&q.price<=bp.buy_high,near=bp.buy_low&&bp.buy_high&&q.price>=bp.buy_low*.985&&q.price<=bp.buy_high*1.018,noChase=bp.no_chase&&q.price>bp.no_chase,tooHot=q.pct>5.5||noChase; let a1=ago(code,60000),a3=ago(code,180000),a5=ago(code,300000); let c1=a1?(q.price/a1.price-1)*100:0,c3=a3?(q.price/a3.price-1)*100:0,amt5=a5?Math.max(0,q.amount_yi-a5.amount_yi):0,grow=b.amount_yi?q.amount_yi/Math.max(Number(b.amount_yi),.1):1; let s=base*.36+up*.18+ela*.16+(inBuy?90:near?72:noChase?35:55)*.14+Math.min(100,Math.max(35,50+c3*12+amt5*8+(grow-1)*18))*.16; if(tooHot)s-=16; if(q.pct<-3.5)s-=10; s=Math.max(0,Math.min(100,s)); let action='观察',cls='warn'; if(s>=72&&(inBuy||near)&&!tooHot){action='强待涨 / 重点盯';cls='good'}else if(s>=62&&!tooHot){action='等待确认';cls='warn'}else if(tooHot){action='急拉或超不追线';cls='bad'}else if(q.pct<-3.5){action='转弱，先别接';cls='bad'} let buyState=inBuy?'买点区':near?'买点附近':noChase?'不追':(bp.buy_low?'等回踩':'快速行情'); return {code,b,q,s,c1,c3,amt5,action,cls,buyState};}
+  function render(){ensure(); let rows=id('v27RealtimeRows'); if(!rows)return; let items=watchCodes().filter(c=>LIVE[c]).map(calc).sort((a,b)=>b.s-a.s).slice(0,10); let head='<div class="v27-cell v27-h">股票</div><div class="v27-cell v27-h">实时价</div><div class="v27-cell v27-h">实时短线分</div><div class="v27-cell v27-h">成交额/增量</div><div class="v27-cell v27-h">买点状态</div><div class="v27-cell v27-h">动作</div>'; rows.innerHTML=head+(items.length?items.map(it=>{let q=it.q,b=it.b,sc=it.s>=72?'v27-good':it.s>=62?'v27-warn':'v27-bad'; return `<div class="v27-row"><div class="v27-cell"><b>${q.name}</b><br><span class="v27-sub">${it.code}</span></div><div class="v27-cell"><b>${nf(q.price)}</b><br><span class="${q.pct>=0?'v27-good':'v27-bad'}">${pct(q.pct)}</span></div><div class="v27-cell"><b class="${sc}">${nf(it.s)}</b><br><span class="v27-sub">1m ${pct(it.c1)} / 3m ${pct(it.c3)}</span></div><div class="v27-cell"><b>${nf(q.amount_yi)}亿</b><br><span class="v27-sub">5m增量 ${nf(it.amt5)}亿</span></div><div class="v27-cell"><span class="v27-sig ${it.buyState==='不追'?'bad':(it.buyState.includes('买点')?'':'warn')}">${it.buyState}</span><br><span class="v27-sub">${(b.buy_plan&&b.buy_plan.buy_low)?`${b.buy_plan.buy_low}~${b.buy_plan.buy_high}`:'—'}</span></div><div class="v27-cell"><span class="v27-sig ${it.cls==='good'?'':it.cls}">${it.action}</span></div></div>`}).join(''):'<div class="v27-note" style="grid-column:1/-1">等待实时行情采样，约10秒后显示。</div>'); if(id('v27LiveTime'))id('v27LiveTime').textContent=tstr();}
+  async function tick(force=false){ensure(); await loadBase(force); await fetchQ(watchCodes()); render();}
+  window.v27RealtimeTick=tick; document.addEventListener('DOMContentLoaded',()=>tick(true)); setTimeout(()=>tick(true),800); setInterval(()=>tick(false),10000); setInterval(()=>loadBase(true),60000);
+})();
+</script>
+
+</body></html>
