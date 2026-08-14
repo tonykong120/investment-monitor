@@ -3,480 +3,470 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>短线机会工作台 V2.8</title>
+<title>短线机会工作台 V2.9</title>
 <style>
 :root{
-  --bg:#f4f5f7; --card:#ffffff; --line:#eceff3; --text:#111827; --mut:#6b7280;
-  --blue:#d9ebff; --blue-deep:#6fa8e8; --ink:#16181d; --green:#17b26a; --orange:#f59e0b; --red:#ef4444;
-  --shadow:0 10px 30px rgba(17,24,39,.06); --radius:22px;
+  --bg:#05080d;
+  --bg2:#08111a;
+  --card:#0a0f16;
+  --card2:#101823;
+  --card3:#121d29;
+  --line:#1f2b38;
+  --line2:#293948;
+  --txt:#f2f7fb;
+  --mut:#7e8b9a;
+  --cyan:#5ee6ff;
+  --cyan2:#24bce3;
+  --green:#50e3a4;
+  --yellow:#ffd166;
+  --red:#ff6b7a;
+  --blue:#7aa7ff;
+  --shadow:0 18px 60px rgba(0,0,0,.42);
 }
 *{box-sizing:border-box}
-body{margin:0;background:linear-gradient(180deg,#f5f6f8,#f0f3f6);color:var(--text);font:14px/1.5 Inter,system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
-.wrap{max-width:1440px;margin:0 auto;padding:28px}
-.topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:18px}
-.logo{font-size:28px;font-weight:900;letter-spacing:.2px}
-.logo em{font-style:normal;color:#8aa7c4}
-.nav{display:flex;gap:10px;flex-wrap:wrap}
-.nav .tab{padding:10px 16px;border-radius:14px;background:#fff;border:1px solid var(--line);color:#4b5563;box-shadow:var(--shadow)}
-.nav .tab.active{background:#111827;color:#fff;border-color:#111827}
-button,input{font:inherit}
-button{border:0;background:#111827;color:#fff;padding:10px 14px;border-radius:12px;cursor:pointer}
-button.ghost{background:#fff;color:#111827;border:1px solid var(--line)}
-button.soft{background:#edf4ff;color:#234a77}
-input{border:1px solid var(--line);background:#fff;padding:10px 12px;border-radius:12px;min-width:160px}
-.hero{display:grid;grid-template-columns:360px 1fr;gap:16px;margin-bottom:16px}
-@media(max-width:980px){.hero{grid-template-columns:1fr}}
-.summary{background:linear-gradient(180deg,#dcedff,#cbe2fb);border:1px solid #d3e5f8;border-radius:28px;padding:24px;box-shadow:var(--shadow);min-height:280px}
-.summary h1{font-size:32px;line-height:1.05;margin:0 0 10px}
-.summary p{color:#35506f;margin:0 0 18px}
-.ring{width:190px;height:190px;border-radius:50%;margin:8px auto 16px;position:relative;background:
-  conic-gradient(#fff calc(var(--p)*1%), rgba(255,255,255,.35) 0)}
-.ring::after{content:"";position:absolute;inset:16px;background:linear-gradient(180deg,#dcedff,#cbe2fb);border-radius:50%}
-.ring .center{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;z-index:2;font-weight:800}
-.summary .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:8px}
-.summary .stats .s{font-size:12px;color:#5b6d80}
-.summary .stats b{display:block;font-size:22px;color:#1f3248}
-.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
-@media(max-width:980px){.cards{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:640px){.cards{grid-template-columns:1fr}}
-.metric{background:#fff;border:1px solid var(--line);border-radius:24px;padding:20px;box-shadow:var(--shadow);min-height:132px}
-.metric .label{color:#6b7280;font-size:13px}
-.metric .value{font-size:46px;font-weight:900;line-height:1;margin:18px 0 10px}
-.metric .delta{font-size:13px}
-.shell{display:grid;grid-template-columns:1.15fr .85fr;gap:16px}
-@media(max-width:1100px){.shell{grid-template-columns:1fr}}
-.panel{background:#fff;border:1px solid var(--line);border-radius:26px;box-shadow:var(--shadow);padding:18px 18px 16px}
-.panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
-.panel h2{font-size:20px;margin:0}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  color:var(--txt);
+  font:14px/1.55 Inter,system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  background:
+    radial-gradient(circle at 82% 4%, rgba(94,230,255,.22), transparent 34%),
+    radial-gradient(circle at 5% 8%, rgba(94,230,255,.08), transparent 20%),
+    linear-gradient(135deg,#020407 0%,#06101a 46%,#071723 100%);
+  min-height:100vh;
+}
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;opacity:.34;
+  background-image:radial-gradient(rgba(255,255,255,.55) 1px, transparent 1px);
+  background-size:36px 36px;
+  mask-image:linear-gradient(90deg,#000,transparent 70%);
+}
+.app{max-width:1600px;margin:0 auto;padding:24px}
+.top-pills{display:flex;gap:16px;margin:8px 0 18px;flex-wrap:wrap}
+.brand-pill,.top-tab{
+  border:1px solid rgba(255,255,255,.08);
+  background:linear-gradient(180deg,rgba(255,255,255,.09),rgba(255,255,255,.035));
+  color:var(--txt);border-radius:999px;padding:13px 22px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08), 0 10px 30px rgba(0,0,0,.22);
+  font-size:17px;font-weight:800;cursor:pointer
+}
+.brand-pill{font-size:24px;letter-spacing:-.5px}
+.top-tab.active{background:linear-gradient(180deg,#172333,#0c121b);color:#fff;border-color:#284050}
+.stage{
+  position:relative;overflow:hidden;border:1px solid rgba(255,255,255,.08);
+  background:rgba(2,6,10,.72);border-radius:32px;box-shadow:var(--shadow);
+  min-height:760px;display:grid;grid-template-columns:238px 1fr;backdrop-filter:blur(14px)
+}
+.stage::before{
+  content:"";position:absolute;inset:-20% -18% auto 25%;height:55%;
+  background:radial-gradient(circle, rgba(94,230,255,.25), transparent 58%);
+  transform:rotate(-7deg);pointer-events:none
+}
+.sidebar{
+  position:relative;z-index:2;border-right:1px solid rgba(255,255,255,.06);
+  background:linear-gradient(180deg,rgba(3,8,12,.88),rgba(2,5,8,.72));
+  padding:28px 18px;min-height:760px
+}
+.logo{display:flex;align-items:center;gap:12px;font-size:20px;font-weight:900;margin-bottom:42px}
+.logo-mark{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--cyan),#2c6bff);box-shadow:0 0 28px rgba(94,230,255,.35)}
+.side-nav{display:grid;gap:10px}
+.nav-btn{
+  width:100%;display:flex;align-items:center;gap:10px;background:transparent;color:#9ca9b7;border:0;
+  padding:12px 14px;border-radius:18px;text-align:left;cursor:pointer;font-weight:700
+}
+.nav-btn:hover{color:#fff;background:rgba(255,255,255,.04)}
+.nav-btn.active{color:#fff;background:linear-gradient(90deg,rgba(94,230,255,.22),rgba(255,255,255,.04));border:1px solid rgba(94,230,255,.18)}
+.nav-dot{width:26px;height:26px;border-radius:50%;display:inline-grid;place-items:center;background:rgba(255,255,255,.07);color:var(--cyan)}
+.main{position:relative;z-index:2;padding:26px}
+.main-head{display:flex;justify-content:space-between;gap:18px;align-items:center;margin-bottom:18px}
+.main-title h1{margin:0;font-size:28px;letter-spacing:-.8px}
+.main-title p{margin:5px 0 0;color:var(--mut)}
+.searchbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.searchbar input{background:#080d14;border:1px solid var(--line);color:var(--txt);border-radius:16px;padding:12px 14px;min-width:180px}
+button{border:0;background:linear-gradient(180deg,#1d3346,#0d1722);color:#fff;padding:11px 14px;border-radius:14px;cursor:pointer;font-weight:800}
+button:hover{filter:brightness(1.12)}
+button.cyan{background:linear-gradient(180deg,#5ee6ff,#1596c2);color:#041018}
+button.ghost{background:rgba(255,255,255,.04);border:1px solid var(--line);color:#c9d4df}
+button.danger{background:linear-gradient(180deg,#5a2228,#2b1115);color:#ffb8c1}
+.view{display:none}
+.view.active{display:block}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:16px}
+@media(max-width:1100px){.stage{grid-template-columns:1fr}.sidebar{min-height:auto}.metrics{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:680px){.metrics{grid-template-columns:1fr}.main{padding:16px}.app{padding:12px}}
+.metric{
+  border:1px solid rgba(255,255,255,.08);border-radius:22px;padding:18px;
+  background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.025));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04)
+}
+.metric .label{color:#9aa8b6;font-size:13px}
+.metric .val{font-size:34px;font-weight:900;margin:12px 0 6px;letter-spacing:-.8px}
+.metric .hint{color:#7d8998;font-size:12px}
+.layout{display:grid;grid-template-columns:1.25fr .75fr;gap:16px}
+@media(max-width:1100px){.layout{grid-template-columns:1fr}}
+.panel{
+  border:1px solid rgba(255,255,255,.08);border-radius:24px;padding:18px;
+  background:linear-gradient(180deg,rgba(10,16,24,.88),rgba(6,10,16,.82));
+  box-shadow:var(--shadow);margin-bottom:16px
+}
+.panel-head{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:12px}
+.panel h2{margin:0;font-size:20px;letter-spacing:-.3px}
 .sub{font-size:12px;color:var(--mut)}
-.kpi-strip{display:flex;gap:8px;flex-wrap:wrap}
-.pill{display:inline-flex;align-items:center;gap:6px;padding:7px 10px;border-radius:999px;background:#f5f7fa;border:1px solid var(--line);font-size:12px;color:#475467}
-.table{width:100%}
-.trow{display:grid;grid-template-columns:1.15fr .45fr .55fr .75fr .9fr;gap:10px;padding:12px 0;border-top:1px solid var(--line);align-items:center}
-.trow:first-child{border-top:0}
-.thead{color:#6b7280;font-size:12px;padding-top:0}
-.badge{display:inline-block;padding:4px 10px;border-radius:999px;background:#eff6ff;color:#1d4ed8;font-size:12px;font-weight:700}
-.badge.good{background:#ecfdf3;color:#027a48}
-.badge.warn{background:#fffaeb;color:#b54708}
-.badge.bad{background:#fef3f2;color:#b42318}
-.name{font-weight:800;font-size:15px}
+.table{display:grid}
+.row{display:grid;grid-template-columns:1.1fr .55fr .7fr .75fr .75fr;gap:12px;align-items:center;padding:12px 0;border-top:1px solid rgba(255,255,255,.06)}
+.row:first-child{border-top:0}
+.headrow{color:#758495;font-size:12px;padding-top:0}
+.name{font-size:16px;font-weight:900}
 .mut{color:var(--mut)}
-.good{color:var(--green)} .warn{color:var(--orange)} .bad{color:var(--red)}
-.compact{display:grid;gap:10px}
-.item{background:#fbfcfd;border:1px solid var(--line);border-radius:18px;padding:14px}
-.item-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
-.item .small{font-size:12px;color:var(--mut)}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
-@media(max-width:980px){.grid2{grid-template-columns:1fr}}
-.list{display:grid;gap:10px}
-.listline{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
-.listline:first-child{border-top:0}
-.empty{padding:18px;border-radius:16px;background:#f7f8fa;border:1px dashed #dbe0e6;color:#98a2b3;text-align:center}
-.inline-form{display:flex;gap:8px;flex-wrap:wrap}
-.small-btn{padding:7px 10px;border-radius:10px;font-size:12px}
-.footer-note{margin-top:8px;color:#98a2b3;font-size:12px}
+.good{color:var(--green)}.bad{color:var(--red)}.warn{color:var(--yellow)}.cyan-t{color:var(--cyan)}
+.badge{display:inline-block;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:900;background:rgba(94,230,255,.12);color:var(--cyan);border:1px solid rgba(94,230,255,.22)}
+.badge.good{background:rgba(80,227,164,.12);color:var(--green);border-color:rgba(80,227,164,.24)}
+.badge.warn{background:rgba(255,209,102,.12);color:var(--yellow);border-color:rgba(255,209,102,.24)}
+.badge.bad{background:rgba(255,107,122,.12);color:var(--red);border-color:rgba(255,107,122,.24)}
+.cards{display:grid;gap:13px}
+.stock-card{
+  border:1px solid rgba(255,255,255,.08);border-radius:22px;padding:16px;background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.025))
+}
+.stock-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.score{font-size:32px;font-weight:950;color:var(--cyan)}
+.info-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
+@media(max-width:800px){.info-grid{grid-template-columns:repeat(2,1fr)}}
+.info{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06);border-radius:15px;padding:10px}
+.info .k{font-size:11px;color:#8190a0}.info .v{font-weight:900;margin-top:2px}
+.reason{margin-top:10px;color:#97a5b4;font-size:12px}
+.empty{border:1px dashed rgba(255,255,255,.12);border-radius:18px;padding:24px;color:#7d8998;text-align:center;background:rgba(255,255,255,.03)}
+.watch-line{display:grid;grid-template-columns:1fr .7fr auto;gap:10px;align-items:center;padding:11px 0;border-top:1px solid rgba(255,255,255,.06)}
+.watch-line:first-child{border-top:0}
+.spark{height:150px;border-radius:20px;border:1px solid rgba(94,230,255,.18);background:
+  linear-gradient(180deg,rgba(94,230,255,.13),transparent),
+  repeating-linear-gradient(to right, transparent, transparent 34px, rgba(255,255,255,.04) 35px),
+  repeating-linear-gradient(to top, transparent, transparent 29px, rgba(255,255,255,.035) 30px);
+  position:relative;overflow:hidden
+}
+.spark svg{position:absolute;inset:0;width:100%;height:100%}
+.newslink{color:#a7f3ff;text-decoration:none}
+.newslink:hover{text-decoration:underline}
+.note{color:#8794a4;font-size:12px;margin-top:8px}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="topbar">
-    <div class="logo">Short Radar<em>.</em></div>
-    <div class="nav">
-      <div class="tab active">Dashboard</div>
-      <div class="tab">Live Radar</div>
-      <div class="tab">Sector Flow</div>
-      <div class="tab">Watchlist</div>
-      <div class="tab">Insights</div>
-    </div>
+<div class="app">
+  <div class="top-pills">
+    <div class="brand-pill">Short Radar</div>
+    <button class="top-tab active" data-view="overview">总览</button>
+    <button class="top-tab" data-view="live">实时雷达</button>
+    <button class="top-tab" data-view="sector">板块资金</button>
+    <button class="top-tab" data-view="opportunity">今日机会</button>
+    <button class="top-tab" data-view="watch">自选监控</button>
   </div>
 
-  <div class="hero">
-    <section class="summary">
-      <h1>短线机会<br/>实时雷达</h1>
-      <p>更轻、更快的盘中监控。板块资金、分钟异动、待涨池都做成精简展示。</p>
-      <div class="ring" id="heroRing" style="--p:62">
-        <div class="center">
-          <div id="heroPct">62%</div>
-          <div class="small">环境 / 待涨</div>
+  <div class="stage">
+    <aside class="sidebar">
+      <div class="logo"><span class="logo-mark"></span><span>短线工作台</span></div>
+      <div class="side-nav">
+        <button class="nav-btn active" data-view="overview"><span class="nav-dot">①</span>总览</button>
+        <button class="nav-btn" data-view="live"><span class="nav-dot">②</span>实时雷达</button>
+        <button class="nav-btn" data-view="sector"><span class="nav-dot">③</span>板块资金</button>
+        <button class="nav-btn" data-view="opportunity"><span class="nav-dot">④</span>今日机会</button>
+        <button class="nav-btn" data-view="watch"><span class="nav-dot">⑤</span>自选监控</button>
+      </div>
+      <div class="note" style="position:absolute;bottom:24px;left:22px;right:22px">盘中主看：板块资金 → 实时雷达 → 今日机会 → 自选。</div>
+    </aside>
+
+    <main class="main">
+      <div class="main-head">
+        <div class="main-title">
+          <h1 id="pageTitle">总览 Overview</h1>
+          <p id="pageSub">暗色交易台版｜中文导航可点击｜保留今日机会详细信息</p>
+        </div>
+        <div class="searchbar">
+          <input id="watchInput" placeholder="添加自选代码，如 600105">
+          <button class="cyan" onclick="addWatch()">添加</button>
+          <button class="ghost" onclick="refreshAll(true)">刷新</button>
         </div>
       </div>
-      <div class="stats">
-        <div class="s">环境分<b id="heroScore">—</b></div>
-        <div class="s">高弹性池<b id="heroPool">—</b></div>
-        <div class="s">自选监控<b id="heroWatch">—</b></div>
-      </div>
-    </section>
 
-    <div class="cards">
-      <section class="metric">
-        <div class="label">实时行情</div>
-        <div class="value" id="liveClock">—</div>
-        <div class="delta" id="liveMode">前端约 5 秒刷新</div>
+      <section id="view-overview" class="view active">
+        <div class="metrics">
+          <div class="metric"><div class="label">实时行情</div><div class="val" id="liveClock">—</div><div class="hint">前端约 5 秒刷新</div></div>
+          <div class="metric"><div class="label">后台模型</div><div class="val" id="modelClock" style="font-size:22px">—</div><div class="hint">全市场扫描，依赖 Actions</div></div>
+          <div class="metric"><div class="label">市场环境</div><div class="val" id="mScore">—</div><div class="hint" id="mState">—</div></div>
+          <div class="metric"><div class="label">高弹性池</div><div class="val" id="poolCount">—</div><div class="hint">满足严格入池的数量</div></div>
+        </div>
+
+        <div class="layout">
+          <div>
+            <section class="panel">
+              <div class="panel-head"><div><h2>资金收益曲线感知</h2><div class="sub">用来呈现今日机会与实时强弱，不是收益承诺。</div></div><span class="badge" id="marketAdvice">—</span></div>
+              <div class="spark">
+                <svg viewBox="0 0 800 160" preserveAspectRatio="none">
+                  <defs><linearGradient id="g" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#5ee6ff" stop-opacity=".65"/><stop offset="1" stop-color="#5ee6ff" stop-opacity="0"/></linearGradient></defs>
+                  <path id="areaPath" d="M0,125 C80,105 120,112 180,90 C260,62 320,78 390,54 C480,28 570,50 640,32 C720,13 760,22 800,7 L800,160 L0,160 Z" fill="url(#g)"/>
+                  <path id="linePath" d="M0,125 C80,105 120,112 180,90 C260,62 320,78 390,54 C480,28 570,50 640,32 C720,13 760,22 800,7" fill="none" stroke="#5ee6ff" stroke-width="3"/>
+                </svg>
+              </div>
+            </section>
+            <section class="panel">
+              <div class="panel-head"><div><h2>今日机会速览</h2><div class="sub">保留具体买点、待涨、弹性、止损、目标。</div></div><button class="ghost" onclick="showView('opportunity')">查看详情</button></div>
+              <div id="overviewOpps" class="cards"><div class="empty">读取中…</div></div>
+            </section>
+          </div>
+
+          <div>
+            <section class="panel">
+              <div class="panel-head"><div><h2>板块资金 Top</h2><div class="sub">资金攻击方向 + 新闻线索。</div></div><button class="ghost" onclick="loadSector(true)">刷新板块</button></div>
+              <div id="overviewSector" class="table"><div class="empty">读取中…</div></div>
+            </section>
+            <section class="panel">
+              <div class="panel-head"><div><h2>自选状态</h2><div class="sub">实时价格与买点关系。</div></div><button class="ghost" onclick="showView('watch')">管理</button></div>
+              <div id="overviewWatch" class="cards"><div class="empty">暂无自选</div></div>
+            </section>
+          </div>
+        </div>
       </section>
-      <section class="metric">
-        <div class="label">后台模型</div>
-        <div class="value" id="modelClock" style="font-size:28px">—</div>
-        <div class="delta" id="modelTip">全市场扫描，不是实时</div>
+
+      <section id="view-live" class="view">
+        <section class="panel">
+          <div class="panel-head"><div><h2>分钟级异动雷达</h2><div class="sub">实时采样：价格、1/3/5分钟涨跌、5分钟成交额增量、买点状态。</div></div><span class="badge" id="rtTime">—</span></div>
+          <div id="liveRadar" class="table"><div class="empty">正在采样实时行情…</div></div>
+        </section>
       </section>
-      <section class="metric">
-        <div class="label">市场环境</div>
-        <div class="value" id="mScore">—</div>
-        <div class="delta" id="mState">—</div>
+
+      <section id="view-sector" class="view">
+        <section class="panel">
+          <div class="panel-head"><div><h2>板块资金流向</h2><div class="sub">前端尝试约 30 秒更新，接口失败时保留最近一次。</div></div><span class="badge" id="sectorTime">—</span></div>
+          <div id="sectorTable" class="table"><div class="empty">读取板块资金中…</div></div>
+        </section>
       </section>
-      <section class="metric">
-        <div class="label">短线建议</div>
-        <div class="value" id="mGuide" style="font-size:24px">—</div>
-        <div class="delta" id="statusBar">读取数据中…</div>
+
+      <section id="view-opportunity" class="view">
+        <section class="panel">
+          <div class="panel-head"><div><h2>今日机会</h2><div class="sub">恢复详细信息：买点区、待涨概率、5日空间、弹性、止损、目标、原因。</div></div><span class="badge">最多 5 只</span></div>
+          <div id="opps" class="cards"><div class="empty">读取中…</div></div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head"><div><h2>高弹性待涨池</h2><div class="sub">严筛：待涨≥60%、5日空间≥8%、买点区、换手不低、5～30元、环境不弱。</div></div></div>
+          <div id="waitPool" class="cards"><div class="empty">等待数据…</div></div>
+        </section>
       </section>
-    </div>
-  </div>
 
-  <div class="shell">
-    <section class="panel">
-      <div class="panel-head">
-        <div>
-          <h2>板块资金流向</h2>
-          <div class="sub">放在最上面，先看资金打哪个方向。支持前端补拉，更新比后台更快。</div>
-        </div>
-        <div class="kpi-strip">
-          <span class="pill">更新时间 <b id="sectorTime">—</b></span>
-          <button class="soft small-btn" onclick="loadSector(true)">刷新板块</button>
-        </div>
-      </div>
-      <div class="table" id="sectorTable">
-        <div class="empty">读取板块资金中…</div>
-      </div>
-      <div class="footer-note">新闻标题是线索，不是确定因果。用于帮你快速判断“可能因为什么被资金看好”。</div>
-    </section>
+      <section id="view-watch" class="view">
+        <section class="panel">
+          <div class="panel-head"><div><h2>自选监控</h2><div class="sub">添加后进入实时雷达，不在后台深度池也会有实时价格。</div></div><span class="badge" id="watchCount">—</span></div>
+          <div id="watchList" class="cards"><div class="empty">暂无自选</div></div>
+        </section>
 
-    <section class="panel">
-      <div class="panel-head">
-        <div>
-          <h2>分钟级异动雷达</h2>
-          <div class="sub">不再空白等待。第一轮拿到实时行情后就展示，1/3/5 分钟不足时显示“采样中”。</div>
-        </div>
-        <div class="kpi-strip">
-          <span class="pill">实时模型 <b id="rtTime">—</b></span>
-          <button class="soft small-btn" onclick="tick(true)">立即刷新</button>
-        </div>
-      </div>
-      <div class="table" id="liveRadar">
-        <div class="empty">正在连接实时行情…</div>
-      </div>
-    </section>
-  </div>
-
-  <div class="grid2">
-    <section class="panel">
-      <div class="panel-head">
-        <div>
-          <h2>高弹性待涨池</h2>
-          <div class="sub">只保留核心信息：待涨、5日空间、买点区、近5日、换手、动作。</div>
-        </div>
-      </div>
-      <div class="compact" id="waitPool"><div class="empty">等待后台模型数据…</div></div>
-    </section>
-
-    <section class="panel">
-      <div class="panel-head">
-        <div>
-          <h2>自选监控</h2>
-          <div class="sub">添加代码后自动进入实时分钟雷达，盘中更有用。</div>
-        </div>
-      </div>
-      <div class="inline-form" style="margin-bottom:8px">
-        <input id="watchInput" placeholder="输入 6 位代码，如 600105"/>
-        <button class="small-btn" onclick="addWatch()">添加</button>
-      </div>
-      <div class="list" id="watchList"><div class="empty">还没有自选股票</div></div>
-    </section>
-  </div>
-
-  <div class="grid2">
-    <section class="panel">
-      <div class="panel-head">
-        <div>
-          <h2>今日机会</h2>
-          <div class="sub">展示最多 5 只，不再冗长。</div>
-        </div>
-      </div>
-      <div class="list" id="opps"><div class="empty">等待数据…</div></div>
-    </section>
-
-    <section class="panel">
-      <div class="panel-head">
-        <div>
-          <h2>风险池</h2>
-          <div class="sub">只展示不追原因。</div>
-        </div>
-      </div>
-      <div class="list" id="riskList"><div class="empty">等待数据…</div></div>
-    </section>
+        <section class="panel">
+          <div class="panel-head"><div><h2>今日不追 / 风险池</h2><div class="sub">只看核心不追原因。</div></div></div>
+          <div id="riskList" class="cards"><div class="empty">等待数据…</div></div>
+        </section>
+      </section>
+    </main>
   </div>
 </div>
 
 <script>
 const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+let DATA = {}, LIVE = {}, HIST = {}, WATCH = JSON.parse(localStorage.getItem('watch') || '["600105","000021"]');
+let sectorCache = [], lastSectorTs = 0;
+const titleMap = {
+  overview:['总览 Overview','先看资金方向，再看机会与自选。'],
+  live:['实时雷达 Live Radar','盘中盯 1/3/5 分钟异动与买点状态。'],
+  sector:['板块资金 Sector Flow','资金异动 + 新闻线索，辅助判断题材方向。'],
+  opportunity:['今日机会 Opportunities','详细买点、待涨、弹性、止损和目标。'],
+  watch:['自选监控 Watchlist','自选股票实时价格、买点关系与风险池。']
+};
 const topicMap = [
-  {keys:['通信','6G','5G','基站','光通信','CPO','光模块'], title:'通信/6G/基站链资金增强，市场在提前交易设备升级与光通信需求'},
-  {keys:['算力','服务器','液冷','交换机','数据中心'], title:'算力基础设施走强，市场看好服务器、液冷与数据中心需求'},
+  {keys:['通信','6G','5G','基站','光通信','CPO','光模块'], title:'通信/6G/基站链资金增强，市场可能在交易设备升级与光通信需求'},
+  {keys:['算力','服务器','液冷','交换机','数据中心'], title:'算力基础设施走强，资金关注服务器、液冷与数据中心'},
   {keys:['芯片','半导体','存储','封装','光刻'], title:'半导体链资金回流，市场关注国产替代与先进封装'},
-  {keys:['电力','电网','储能','绿电','火电'], title:'电力链获资金关注，可能受电力改革、用电需求或储能催化'},
+  {keys:['电力','电网','储能','绿电','火电'], title:'电力链获资金关注，可能受电改、用电需求或储能催化'},
   {keys:['机器人','自动化','减速器','工业母机'], title:'机器人与自动化方向升温，资金偏好高弹性制造链'},
   {keys:['军工','卫星','导航','航天'], title:'军工/卫星方向异动，市场可能在交易政策与订单预期'},
   {keys:['有色','黄金','稀土','铜','铝'], title:'资源品方向异动，资金或在交易涨价与供需变化'}
 ];
-function topicTitle(name){
-  name = String(name || '');
-  for(const t of topicMap){ if(t.keys.some(k => name.includes(k))) return t.title; }
-  return `${name}板块资金异动，可能存在题材催化或资金提前布局`;
+function topicTitle(name){name=String(name||''); for(const t of topicMap){if(t.keys.some(k=>name.includes(k)))return t.title;} return `${name}板块资金异动，可能存在题材催化或资金提前布局`;}
+function searchUrl(q){return `https://www.baidu.com/s?wd=${encodeURIComponent(q+' 今日 A股 利好 新闻')}`;}
+function pct(v){return (v==null||isNaN(v))?'—':`${Number(v)>=0?'+':''}${Number(v).toFixed(2)}%`;}
+function n2(v){return (v==null||isNaN(v))?'—':Number(v).toFixed(2);}
+function yi(v){return (v==null||isNaN(v))?'—':`${Number(v)>=0?'+':''}${Number(v).toFixed(2)}亿`;}
+function codeSym(c){return (String(c).startsWith('6')?'sh':'sz')+c;}
+function nowTime(){return new Date().toLocaleTimeString('zh-CN',{hour12:false});}
+function showView(v){
+  $$('.view').forEach(x=>x.classList.remove('active'));
+  $(`#view-${v}`)?.classList.add('active');
+  $$('.nav-btn,.top-tab').forEach(x=>x.classList.toggle('active',x.dataset.view===v));
+  $('#pageTitle').textContent = titleMap[v]?.[0] || '总览';
+  $('#pageSub').textContent = titleMap[v]?.[1] || '';
 }
-function pct(v){ return (v==null || isNaN(v)) ? '—' : `${Number(v)>=0?'+':''}${Number(v).toFixed(2)}%`; }
-function n2(v){ return (v==null || isNaN(v)) ? '—' : Number(v).toFixed(2); }
-function yi(v){ return (v==null || isNaN(v)) ? '—' : `${Number(v)>=0?'+':''}${Number(v).toFixed(2)}亿`; }
-function codeSym(c){ return (String(c).startsWith('6') ? 'sh' : 'sz') + c; }
-function searchUrl(q){ return `https://www.baidu.com/s?wd=${encodeURIComponent(q + ' 今日 A股 利好 新闻')}`; }
+$$('.nav-btn,.top-tab').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.view)));
 
-let DATA = {};
-let LIVE = {};
-let HIST = {};
-let WATCH = JSON.parse(localStorage.getItem('watch') || '["600105","000021"]');
-let sectorCache = [];
-let lastSectorTs = 0;
-
-function nowTime(){ return new Date().toLocaleTimeString('zh-CN',{hour12:false}); }
-function ago(code, ms){
-  const arr = HIST[code] || [];
-  const t = Date.now() - ms;
-  let out = null;
-  for(const x of arr){ if(x.t <= t) out = x; }
-  return out || arr[0] || null;
-}
-function remember(code, q){
-  if(!HIST[code]) HIST[code] = [];
-  HIST[code].push({t:Date.now(), price:q.price, amount_yi:q.amount_yi});
-  HIST[code] = HIST[code].filter(x => Date.now() - x.t <= 12*60*1000);
-}
-function allCodes(){
-  const set = new Set(WATCH);
-  ['opportunities','high_elastic_wait_pool','watchlist','avoid_list'].forEach(k => (DATA[k]||[]).forEach(x => set.add(String(x.code))));
-  return [...set].filter(c => /^\d{6}$/.test(c));
-}
 async function loadData(force=false){
   try{
-    const res = await fetch(`./data/latest.json?t=${Date.now()}`, {cache:'no-store'});
-    DATA = await res.json();
+    const r = await fetch(`./data/latest.json?t=${Date.now()}`,{cache:'no-store'});
+    DATA = await r.json();
     $('#modelClock').textContent = DATA.updated_at || '—';
-    $('#statusBar').textContent = DATA.refresh_note || '读取成功';
-    const m = DATA.market || {};
+    const m=DATA.market||{};
     $('#mScore').textContent = m.score ?? '—';
     $('#mState').textContent = m.state || '—';
-    $('#mGuide').textContent = m.guidance ? (m.guidance.includes('少做') ? '谨慎' : m.guidance.includes('降低') ? '控仓' : '可做') : '—';
-    $('#heroScore').textContent = m.score ?? '—';
-    const poolLen = (DATA.high_elastic_wait_pool||[]).length;
-    $('#heroPool').textContent = poolLen;
-    $('#heroWatch').textContent = WATCH.length;
-    $('#heroPct').textContent = `${Math.max(0, Math.min(100, Number(m.score || 0)))}%`;
-    $('#heroRing').style.setProperty('--p', Math.max(0, Math.min(100, Number(m.score || 0))));
-    renderWaitPool();
-    renderOpps();
-    renderRisk();
-    renderWatch();
+    $('#marketAdvice').textContent = m.guidance || '—';
+    $('#poolCount').textContent = (DATA.high_elastic_wait_pool||[]).length;
+    renderAll();
     loadSector(false);
   }catch(e){
-    $('#statusBar').textContent = 'latest.json 读取失败';
+    $('#modelClock').textContent = '读取失败';
   }
 }
-function renderSector(items, fresh=true){
-  const box = $('#sectorTable');
-  if(!items.length){ box.innerHTML = '<div class="empty">暂无板块资金数据</div>'; return; }
-  box.innerHTML = `
-    <div class="trow thead"><div>板块 / 新闻线索</div><div>涨跌</div><div>净流入</div><div>状态</div><div>动作</div></div>
-    ${items.slice(0,8).map(s => {
-      const status = (s.main_yi ?? s.main_inflow ?? 0) > 8 ? ['主线攻击','good'] : (s.main_yi ?? s.main_inflow ?? 0) > 2 ? ['资金关注','warn'] : ['观察',''];
-      return `<div class="trow">
-        <div><div class="name">${s.name}</div><div class="sub">${topicTitle(s.name)}</div></div>
-        <div class="${(s.pct||0)>=0?'good':'bad'}">${pct(s.pct)}</div>
-        <div class="${(s.main_yi ?? s.main_inflow ?? 0)>=0?'good':'bad'}">${yi(s.main_yi ?? s.main_inflow)}</div>
-        <div><span class="badge ${status[1]}">${status[0]}</span></div>
-        <div><button class="ghost small-btn" onclick="window.open('${searchUrl(s.name)}','_blank')">查新闻</button></div>
-      </div>`;
-    }).join('')}`;
-  $('#sectorTime').textContent = `${nowTime()}${fresh ? '' : ' · 缓存'}`;
-}
-async function loadSector(force=false){
-  if(!force && Date.now() - lastSectorTs < 25000 && sectorCache.length){
-    renderSector(sectorCache, true); return;
-  }
-  let items = [];
-  try{
-    const url = 'https://push2.eastmoney.com/api/qt/clist/get?pn=1&pz=16&po=1&np=1&fltt=2&invt=2&fid=f62&fs=m:90+t:2&fields=f12,f14,f3,f62,f66,f72,f184';
-    const r = await fetch(url, {cache:'no-store'});
-    const j = await r.json();
-    if(j?.data?.diff?.length){
-      items = j.data.diff.map(d => ({name:d.f14, code:d.f12, pct:Number(d.f3), main_yi:Number(d.f62||0)/1e8}));
-    }
-  }catch(e){}
-  if(!items.length && DATA.sector_flow){
-    items = DATA.sector_flow.map(s => ({name:s.name, pct:s.pct, main_yi:s.main_yi ?? s.net_inflow_yi ?? s.main_inflow}));
-  }
-  if(items.length){
-    sectorCache = items;
-    lastSectorTs = Date.now();
-    renderSector(items, true);
-  }else if(sectorCache.length){
-    renderSector(sectorCache, false);
-  }else{
-    $('#sectorTable').innerHTML = '<div class="empty">当前没拿到板块资金。可以点“刷新板块”重试；如仍无数据，多半是接口限制。</div>';
-    $('#sectorTime').textContent = '失败';
-  }
-}
-function renderWaitPool(){
-  const arr = DATA.high_elastic_wait_pool || [];
-  $('#waitPool').innerHTML = arr.length ? arr.slice(0,6).map(x => {
-    const rise = x.rise_signal || {}, ups = x.upside_model || {}, bp = x.buy_plan || {}, el = x.elasticity || {}, early = x.early_signal || {};
-    const action = bp.state === '进入买点区' ? '可观察 / 盯盘' : (bp.state || '等待');
-    return `<div class="item">
-      <div class="item-top">
-        <div><div class="name">${x.name} <span class="mut">${x.code}</span></div><div class="small">${x.sector || x.industry || '—'} ｜ ${el.level || '弹性'} ｜ 现价 ${x.price ?? '—'}</div></div>
-        <span class="badge good">${rise.estimated_up_5d ?? '—'}%</span>
-      </div>
-      <div class="small" style="margin-top:8px">5日空间 ${ups.expected_upside_5d ?? '—'}% ｜ 买点 ${bp.buy_low ?? '—'} ~ ${bp.buy_high ?? '—'} ｜ 近5日 ${pct(early.ret5)} ｜ 换手 ${n2(el.turnover_5d)}%</div>
-      <div class="small" style="margin-top:6px"><b>${action}</b></div>
-    </div>`;
-  }).join('') : '<div class="empty">今天暂无同时满足“待涨≥60% + 5日空间≥8% + 买点区”的票。宁缺毋滥。</div>';
+function renderAll(){renderOpps();renderWaitPool();renderWatch();renderRisk();renderOverview();}
+function renderOverview(){
+  const opp=(DATA.opportunities||[]).slice(0,2);
+  $('#overviewOpps').innerHTML=opp.length?opp.map(stockCard).join(''):'<div class="empty">暂无今日机会</div>';
+  $('#overviewWatch').innerHTML=WATCH.slice(0,3).map(watchCard).join('') || '<div class="empty">暂无自选</div>';
 }
 function renderOpps(){
-  const arr = DATA.opportunities || [];
-  $('#opps').innerHTML = arr.length ? arr.slice(0,5).map(x => {
-    const bp = x.buy_plan || {}, rise = x.rise_signal || {}, el = x.elasticity || {};
-    return `<div class="listline"><div><div class="name">${x.name} <span class="mut">${x.code}</span></div><div class="sub">${el.level || '—'} ｜ 买点 ${bp.buy_low ?? '—'}~${bp.buy_high ?? '—'}</div></div><div style="text-align:right"><div class="good">${x.price ?? '—'} ${pct(x.pct)}</div><div class="sub">待涨 ${rise.estimated_up_5d ?? '—'}%</div></div></div>`;
-  }).join('') : '<div class="empty">暂无今日机会。</div>';
+  const arr=DATA.opportunities||[];
+  $('#opps').innerHTML=arr.length?arr.slice(0,5).map(stockCard).join(''):'<div class="empty">暂无今日机会。空着比乱给机会好。</div>';
+}
+function renderWaitPool(){
+  const arr=DATA.high_elastic_wait_pool||[];
+  $('#waitPool').innerHTML=arr.length?arr.slice(0,8).map(stockCard).join(''):'<div class="empty">暂无满足严筛的高弹性待涨票。</div>';
+}
+function stockCard(x){
+  const bp=x.buy_plan||{}, r=x.rise_signal||{}, e=x.elasticity||{}, u=x.upside_model||{}, t=x.turnover||{}, early=x.early_signal||{};
+  const q=LIVE[String(x.code)]||{};
+  const price=q.price??x.price;
+  const pp=q.pct??x.pct;
+  const reasons=[...(x.reasons||[]),...(x.warnings||[]).map(v=>'⚠ '+v)].slice(0,5).join(' / ');
+  return `<div class="stock-card">
+    <div class="stock-top">
+      <div><div class="name">${x.name} <span class="mut">${x.code}</span></div><div class="mut">${x.status||'—'} ｜ ${e.level||'—'} ｜ ${x.quote_source||''}</div></div>
+      <div style="text-align:right"><div class="score">${x.short_score??x.score??'—'}</div><div class="${(pp||0)>=0?'good':'bad'}">${price??'—'} ${pct(pp)}</div></div>
+    </div>
+    <div class="info-grid">
+      <div class="info"><div class="k">待涨估计</div><div class="v">${r.estimated_up_5d??'—'}%</div></div>
+      <div class="info"><div class="k">5日空间</div><div class="v">${u.expected_upside_5d??'—'}%</div></div>
+      <div class="info"><div class="k">买点区</div><div class="v">${bp.buy_low??'—'}~${bp.buy_high??'—'}</div></div>
+      <div class="info"><div class="k">止损 / 目标</div><div class="v">${x.stop??'—'} / ${x.target1??'—'}</div></div>
+      <div class="info"><div class="k">近5日</div><div class="v">${pct(early.ret5)}</div></div>
+      <div class="info"><div class="k">换手</div><div class="v">${t.avg5_turn??'—'}%</div></div>
+      <div class="info"><div class="k">买点状态</div><div class="v">${bp.state??'—'}</div></div>
+      <div class="info"><div class="k">样本</div><div class="v">${(x.backtest||{}).sample_size??'—'}次</div></div>
+    </div>
+    <div class="reason">${reasons||'暂无额外信号'}</div>
+  </div>`;
 }
 function renderRisk(){
-  const arr = DATA.avoid_list || [];
-  $('#riskList').innerHTML = arr.length ? arr.slice(0,6).map(x => `<div class="listline"><div><div class="name">${x.name} <span class="mut">${x.code}</span></div><div class="sub">${(x.warnings||[]).slice(0,2).join(' / ') || '不追'}</div></div><span class="badge bad">${x.status || '不追'}</span></div>`).join('') : '<div class="empty">暂无风险池。</div>';
+  const arr=DATA.avoid_list||DATA.risk_pool||[];
+  $('#riskList').innerHTML=arr.length?arr.slice(0,8).map(x=>`<div class="watch-line"><div><div class="name">${x.name} <span class="mut">${x.code}</span></div><div class="mut">${(x.warnings||[]).slice(0,3).join(' / ')||'不追'}</div></div><span class="badge bad">${x.status||'不追'}</span></div>`).join(''):'<div class="empty">暂无风险池</div>';
+}
+function watchCard(code){
+  const q=LIVE[String(code)]||{};
+  const base=[...(DATA.watchlist||[]),...(DATA.opportunities||[]),...(DATA.high_elastic_wait_pool||[])].find(x=>String(x.code)===String(code))||{};
+  const bp=base.buy_plan||{};
+  return `<div class="watch-line"><div><div class="name">${q.name||base.name||code} <span class="mut">${code}</span></div><div class="mut">买点 ${bp.buy_low??'—'}~${bp.buy_high??'—'} ｜ 不追 ${bp.no_chase??'—'}</div></div><div style="text-align:right"><div class="${(q.pct||0)>=0?'good':'bad'}">${q.price??'—'} ${pct(q.pct)}</div><div class="mut">额 ${n2(q.amount_yi)}亿</div></div><button class="danger" onclick="removeWatch('${code}')">删</button></div>`;
 }
 function renderWatch(){
-  const box = $('#watchList');
-  if(!WATCH.length){ box.innerHTML = '<div class="empty">还没有自选股票</div>'; return; }
-  box.innerHTML = WATCH.map(code => {
-    const q = LIVE[code] || {};
-    const base = [...(DATA.watchlist || []), ...(DATA.opportunities || []), ...(DATA.high_elastic_wait_pool || [])].find(x => String(x.code) === code) || {};
-    const bp = base.buy_plan || {};
-    return `<div class="listline">
-      <div><div class="name">${q.name || base.name || code} <span class="mut">${code}</span></div><div class="sub">买点 ${bp.buy_low ?? '—'}~${bp.buy_high ?? '—'} ｜ 不追 ${bp.no_chase ?? '—'}</div></div>
-      <div style="text-align:right"><div class="${(q.pct||0)>=0?'good':'bad'}">${q.price ?? '—'} ${pct(q.pct)}</div><div class="sub">额 ${n2(q.amount_yi)} 亿</div></div>
-      <div><button class="ghost small-btn" onclick="removeWatch('${code}')">删除</button></div>
-    </div>`;
-  }).join('');
-  $('#heroWatch').textContent = WATCH.length;
+  $('#watchCount').textContent=`${WATCH.length}只`;
+  $('#watchList').innerHTML=WATCH.length?WATCH.map(watchCard).join(''):'<div class="empty">暂无自选</div>';
+  renderOverview();
 }
 function addWatch(){
-  const v = $('#watchInput').value.trim();
-  if(!/^\d{6}$/.test(v)) return;
-  if(!WATCH.includes(v)) WATCH.unshift(v);
-  localStorage.setItem('watch', JSON.stringify(WATCH));
-  $('#watchInput').value = '';
-  renderWatch();
-  tick(true);
+  const v=$('#watchInput').value.trim();
+  if(!/^\d{6}$/.test(v))return;
+  if(!WATCH.includes(v))WATCH.unshift(v);
+  localStorage.setItem('watch',JSON.stringify(WATCH));
+  $('#watchInput').value='';
+  renderWatch(); tick(true);
 }
-function removeWatch(code){
-  WATCH = WATCH.filter(x => x !== code);
-  localStorage.setItem('watch', JSON.stringify(WATCH));
-  renderWatch();
+function removeWatch(c){WATCH=WATCH.filter(x=>x!==c);localStorage.setItem('watch',JSON.stringify(WATCH));renderWatch();renderLiveRadar();}
+function allCodes(){
+  const s=new Set(WATCH);
+  ['opportunities','high_elastic_wait_pool','watchlist','avoid_list'].forEach(k=>(DATA[k]||[]).forEach(x=>s.add(String(x.code))));
+  return [...s].filter(c=>/^\d{6}$/.test(c)).slice(0,100);
 }
+function remember(code,q){
+  if(!HIST[code])HIST[code]=[];
+  HIST[code].push({t:Date.now(),price:q.price,amount_yi:q.amount_yi});
+  HIST[code]=HIST[code].filter(x=>Date.now()-x.t<=12*60*1000);
+}
+function ago(code,ms){const a=HIST[code]||[],t=Date.now()-ms;let o=null;for(const x of a){if(x.t<=t)o=x;}return o||a[0]||null;}
 function parseTencent(codes){
-  codes.forEach(code => {
-    const raw = window['v_' + codeSym(code)];
-    if(!raw) return;
-    const a = String(raw).split('~');
-    if(a.length < 38) return;
-    const price = Number(a[3]), prev = Number(a[4] || price), high = Number(a[33] || price), low = Number(a[34] || price);
-    const amount_yi = Number(a[37] || 0) / 10000;
-    if(!price) return;
-    LIVE[code] = {code, name:a[1], price, pct:Number(a[32] || ((price/prev - 1) * 100)), high, low, prev, amount_yi, amp:(high-low)/Math.max(prev,0.01)*100};
-    remember(code, LIVE[code]);
+  codes.forEach(code=>{
+    const raw=window['v_'+codeSym(code)];
+    if(!raw)return;
+    const a=String(raw).split('~'); if(a.length<38)return;
+    const price=Number(a[3]),prev=Number(a[4]||price),high=Number(a[33]||price),low=Number(a[34]||price);
+    const amount_yi=Number(a[37]||0)/10000;
+    if(!price)return;
+    LIVE[code]={code,name:a[1],price,pct:Number(a[32]||((price/prev-1)*100)),high,low,prev,amount_yi,amp:(high-low)/Math.max(prev,.01)*100};
+    remember(code,LIVE[code]);
   });
 }
 function fetchTencent(codes){
-  return new Promise(resolve => {
-    if(!codes.length) return resolve();
-    const chunks = [];
-    for(let i=0;i<codes.length;i+=60) chunks.push(codes.slice(i,i+60));
-    let left = chunks.length;
-    chunks.forEach(chunk => {
-      const sc = document.createElement('script');
-      sc.src = 'https://qt.gtimg.cn/q=' + chunk.map(codeSym).join(',') + '&_=' + Date.now();
-      sc.charset = 'gbk';
-      sc.onload = sc.onerror = () => {
-        parseTencent(chunk);
-        sc.remove();
-        left -= 1;
-        if(left <= 0) resolve();
-      };
+  return new Promise(resolve=>{
+    if(!codes.length)return resolve();
+    const chunks=[]; for(let i=0;i<codes.length;i+=60)chunks.push(codes.slice(i,i+60));
+    let left=chunks.length;
+    chunks.forEach(chunk=>{
+      const sc=document.createElement('script');
+      sc.src='https://qt.gtimg.cn/q='+chunk.map(codeSym).join(',')+'&_='+Date.now();
+      sc.charset='gbk';
+      sc.onload=sc.onerror=()=>{parseTencent(chunk);sc.remove();if(--left<=0)resolve();};
       document.body.appendChild(sc);
-      setTimeout(() => { try{ sc.onload(); }catch(e){} }, 3500);
+      setTimeout(()=>{try{sc.onload()}catch(e){}},3500);
     });
   });
 }
-function calcLiveItem(code){
-  const q = LIVE[code];
-  if(!q) return null;
-  const base = [...(DATA.high_elastic_wait_pool || []), ...(DATA.opportunities || []), ...(DATA.watchlist || [])].find(x => String(x.code) === code) || {};
-  const bp = base.buy_plan || {}, rise = base.rise_signal || {}, el = base.elasticity || {};
-  const a1 = ago(code, 60*1000), a3 = ago(code, 3*60*1000), a5 = ago(code, 5*60*1000);
-  const p1 = a1 ? (q.price / a1.price - 1) * 100 : null;
-  const p3 = a3 ? (q.price / a3.price - 1) * 100 : null;
-  const p5 = a5 ? (q.price / a5.price - 1) * 100 : null;
-  const amt5 = a5 ? Math.max(0, q.amount_yi - a5.amount_yi) : null;
-  const inBuy = bp.buy_low && bp.buy_high && q.price >= bp.buy_low && q.price <= bp.buy_high;
-  const nearBuy = bp.buy_low && bp.buy_high && q.price >= bp.buy_low*0.985 && q.price <= bp.buy_high*1.018;
-  const noChase = bp.no_chase && q.price > bp.no_chase;
-  let score = Number(base.short_score ?? base.score ?? 55) * 0.35 + Number(rise.estimated_up_5d ?? 55) * 0.25 + Number(el.score ?? 55) * 0.15;
-  score += (inBuy ? 12 : nearBuy ? 6 : 0);
-  score += ((p3 || 0) * 5 + (amt5 || 0) * 2);
-  if(noChase) score -= 12;
-  score = Math.max(0, Math.min(100, score));
-  let action = '观察', cls = 'warn';
-  if(noChase){ action = '急拉，不追'; cls = 'bad'; }
-  else if(inBuy && score >= 68){ action = '可重点盯'; cls = 'good'; }
-  else if(nearBuy && score >= 60){ action = '买点附近'; cls = 'warn'; }
-  else if((p3||0) < -1.8){ action = '转弱观察'; cls = 'bad'; }
-
-  return {code, q, score, p1, p3, p5, amt5, inBuy, nearBuy, noChase, action, cls, bp, base};
+function liveItem(code){
+  const q=LIVE[code]; if(!q)return null;
+  const base=[...(DATA.high_elastic_wait_pool||[]),...(DATA.opportunities||[]),...(DATA.watchlist||[])].find(x=>String(x.code)===code)||{};
+  const bp=base.buy_plan||{}, r=base.rise_signal||{}, e=base.elasticity||{};
+  const a1=ago(code,60000),a3=ago(code,180000),a5=ago(code,300000);
+  const p1=a1?(q.price/a1.price-1)*100:null,p3=a3?(q.price/a3.price-1)*100:null,p5=a5?(q.price/a5.price-1)*100:null;
+  const amt5=a5?Math.max(0,q.amount_yi-a5.amount_yi):null;
+  const inBuy=bp.buy_low&&bp.buy_high&&q.price>=bp.buy_low&&q.price<=bp.buy_high;
+  const noChase=bp.no_chase&&q.price>bp.no_chase;
+  let score=Number(base.short_score??base.score??55)*.35+Number(r.estimated_up_5d??55)*.25+Number(e.score??55)*.15+(inBuy?12:0)+((p3||0)*5+(amt5||0)*2);
+  if(noChase)score-=12; score=Math.max(0,Math.min(100,score));
+  let action='观察',cls='warn'; if(noChase){action='急拉不追';cls='bad'} else if(inBuy&&score>=68){action='重点盯';cls='good'} else if(score>=62){action='等待确认';cls='warn'} else if((p3||0)<-1.8){action='转弱';cls='bad'}
+  return {code,q,base,bp,p1,p3,p5,amt5,score,action,cls};
 }
 function renderLiveRadar(){
-  const codes = allCodes();
-  const items = codes.map(calcLiveItem).filter(Boolean).sort((a,b) => b.score - a.score).slice(0,8);
-  const box = $('#liveRadar');
-  if(!items.length){ box.innerHTML = '<div class="empty">正在采样实时行情，通常 5 秒内会出现第一批数据。</div>'; return; }
-  box.innerHTML = `
-    <div class="trow thead"><div>股票</div><div>实时价</div><div>1m / 3m / 5m</div><div>5m额增量</div><div>动作</div></div>
-    ${items.map(it => `
-      <div class="trow">
-        <div><div class="name">${it.q.name || it.base.name || it.code}</div><div class="sub">${it.code} ｜ 买点 ${it.bp.buy_low ?? '—'}~${it.bp.buy_high ?? '—'}</div></div>
-        <div><div class="${(it.q.pct||0)>=0?'good':'bad'}">${it.q.price} ${pct(it.q.pct)}</div><div class="sub">振幅 ${n2(it.q.amp)}%</div></div>
-        <div><div>${it.p1 == null ? '采样中' : pct(it.p1)} / ${it.p3 == null ? '采样中' : pct(it.p3)} / ${it.p5 == null ? '采样中' : pct(it.p5)}</div></div>
-        <div><div>${it.amt5 == null ? '采样中' : `${n2(it.amt5)}亿`}</div></div>
-        <div><span class="badge ${it.cls}">${it.action}</span></div>
-      </div>
-    `).join('')}`;
-  $('#rtTime').textContent = nowTime();
+  const items=allCodes().map(liveItem).filter(Boolean).sort((a,b)=>b.score-a.score).slice(0,10);
+  $('#liveRadar').innerHTML=items.length?`<div class="row headrow"><div>股票</div><div>实时价</div><div>1/3/5分钟</div><div>额增量</div><div>动作</div></div>`+items.map(it=>`<div class="row"><div><div class="name">${it.q.name||it.base.name||it.code}</div><div class="mut">${it.code} ｜ 买点 ${it.bp.buy_low??'—'}~${it.bp.buy_high??'—'}</div></div><div><div class="${(it.q.pct||0)>=0?'good':'bad'}">${it.q.price} ${pct(it.q.pct)}</div><div class="mut">振幅 ${n2(it.q.amp)}%</div></div><div>${it.p1==null?'采样中':pct(it.p1)} / ${it.p3==null?'采样中':pct(it.p3)} / ${it.p5==null?'采样中':pct(it.p5)}</div><div>${it.amt5==null?'采样中':n2(it.amt5)+'亿'}</div><div><span class="badge ${it.cls}">${it.action}</span></div></div>`).join(''):'<div class="empty">正在采样实时行情…</div>';
+  $('#rtTime').textContent=nowTime();
+}
+async function loadSector(force=false){
+  if(!force&&Date.now()-lastSectorTs<25000&&sectorCache.length){renderSector(sectorCache);return;}
+  let items=[];
+  try{
+    const url='https://push2.eastmoney.com/api/qt/clist/get?pn=1&pz=16&po=1&np=1&fltt=2&invt=2&fid=f62&fs=m:90+t:2&fields=f12,f14,f3,f62,f66,f72,f184';
+    const r=await fetch(url,{cache:'no-store'}); const j=await r.json();
+    if(j?.data?.diff?.length)items=j.data.diff.map(d=>({name:d.f14,code:d.f12,pct:Number(d.f3),main_yi:Number(d.f62||0)/1e8}));
+  }catch(e){}
+  if(!items.length&&DATA.sector_flow)items=DATA.sector_flow.map(s=>({name:s.name,pct:s.pct,main_yi:s.main_yi??s.net_inflow_yi??s.main_inflow}));
+  if(items.length){sectorCache=items;lastSectorTs=Date.now();renderSector(items)}
+  else $('#sectorTable').innerHTML='<div class="empty">当前没拿到板块资金，可能是接口限制或非交易时段。</div>';
+}
+function renderSector(items){
+  const table=`<div class="row headrow"><div>板块 / 新闻线索</div><div>涨跌</div><div>净流入</div><div>状态</div><div>动作</div></div>`+items.slice(0,10).map(s=>{
+    const st=s.main_yi>8?['主线攻击','good']:s.main_yi>2?['资金关注','warn']:['观察',''];
+    return `<div class="row"><div><div class="name">${s.name}</div><a class="newslink" target="_blank" href="${searchUrl(s.name)}">${topicTitle(s.name)}</a></div><div class="${(s.pct||0)>=0?'good':'bad'}">${pct(s.pct)}</div><div class="${(s.main_yi||0)>=0?'good':'bad'}">${yi(s.main_yi)}</div><div><span class="badge ${st[1]}">${st[0]}</span></div><div><button class="ghost" onclick="window.open('${searchUrl(s.name)}','_blank')">查新闻</button></div></div>`;
+  }).join('');
+  $('#sectorTable').innerHTML=table; $('#overviewSector').innerHTML=table;
+  $('#sectorTime').textContent=nowTime();
 }
 async function tick(force=false){
-  $('#liveClock').textContent = nowTime();
-  $('#liveMode').textContent = '前端约 5 秒刷新';
+  $('#liveClock').textContent=nowTime();
   await fetchTencent(allCodes());
-  renderWatch();
-  renderLiveRadar();
+  renderWatch(); renderLiveRadar(); renderOpps(); renderWaitPool(); renderOverview();
 }
-loadData(true);
-tick(true);
-loadSector(true);
-setInterval(() => loadData(false), 60000);
-setInterval(() => tick(false), 5000);
-setInterval(() => loadSector(false), 30000);
+function refreshAll(force=false){loadData(true);tick(true);loadSector(true)}
+loadData(true); tick(true); loadSector(true);
+setInterval(()=>loadData(false),60000);
+setInterval(()=>tick(false),5000);
+setInterval(()=>loadSector(false),30000);
 </script>
 </body>
 </html>
