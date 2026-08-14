@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>短线机会工作台 V2.12</title>
+<title>短线机会工作台 V2.13</title>
 <style>
 :root{
   --bg:#05080d;
@@ -231,6 +231,58 @@ details.more[open] summary{margin-bottom:8px}
 @media(max-width:1100px){.overview-grid{grid-template-columns:1fr}.detail-grid{grid-template-columns:repeat(3,1fr)}.trade-plan{grid-template-columns:1fr}}
 @media(max-width:700px){.detail-grid{grid-template-columns:repeat(2,1fr)}}
 
+
+/* V2.13 自由布局：可拖拽 + 可设置短/中/长/整行 */
+.overview-grid{
+  display:grid;
+  grid-template-columns:repeat(12,minmax(0,1fr));
+  gap:16px;
+  align-items:start;
+}
+.overview-module{
+  cursor:grab;
+  grid-column:span 6;
+  min-width:0;
+}
+.overview-module[data-size="small"]{grid-column:span 4}
+.overview-module[data-size="normal"]{grid-column:span 6}
+.overview-module[data-size="wide"]{grid-column:span 8}
+.overview-module[data-size="full"]{grid-column:1 / -1}
+.overview-module[data-height="short"] .cards .stock-card:nth-child(n+2),
+.overview-module[data-height="short"] .sector-cards .sector-card:nth-child(n+3),
+.overview-module[data-height="short"] #overviewLiveRadar .stock-card:nth-child(n+3){display:none}
+.overview-module[data-height="tall"]{align-self:stretch}
+.overview-module:active{cursor:grabbing}
+.overview-module.dragging{opacity:.45;outline:1px dashed rgba(94,230,255,.55)}
+.module-tools{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+.module-tools button{
+  padding:4px 7px;
+  font-size:10px;
+  border-radius:8px;
+  background:rgba(255,255,255,.055);
+  color:#9fb0c1;
+  border:1px solid rgba(255,255,255,.08);
+}
+.module-tools button:hover{color:#fff;border-color:rgba(94,230,255,.32)}
+.module-handle{font-size:10px;color:#6f7f8f;margin-left:6px}
+.model-error-box{
+  margin-top:8px;
+  padding:8px 10px;
+  border-radius:12px;
+  background:rgba(255,107,122,.08);
+  border:1px solid rgba(255,107,122,.16);
+  color:#ffb8c1;
+  font-size:11px;
+  display:none;
+}
+@media(max-width:1300px){
+  .overview-module[data-size="small"],.overview-module[data-size="normal"],.overview-module[data-size="wide"]{grid-column:span 6}
+}
+@media(max-width:900px){
+  .overview-grid{grid-template-columns:1fr}
+  .overview-module,.overview-module[data-size="small"],.overview-module[data-size="normal"],.overview-module[data-size="wide"],.overview-module[data-size="full"]{grid-column:1 / -1}
+}
+
 </style>
 </head>
 <body>
@@ -276,23 +328,47 @@ details.more[open] summary{margin-bottom:8px}
 
         
         <div class="overview-grid" id="overviewGrid">
-          <section class="panel overview-module" draggable="true" data-module="overviewOpps">
-            <div class="panel-head"><div><h2>今日机会速览 <span class="module-handle">拖动排序</span></h2><div class="sub">放在第一优先级：保留具体买点、待涨、弹性、止损、目标、回测和资金状态。</div></div><button class="ghost" onclick="showView('opportunity')">查看详情</button></div>
+          <section class="panel overview-module" draggable="true" data-module="overviewOpps" data-size="normal" data-height="normal">
+            <div class="panel-head"><div><h2>今日机会速览 <span class="module-handle">拖动排序</span></h2><div class="module-tools" data-tools>
+  <button onclick="resizeModule(this,'small')">短</button>
+  <button onclick="resizeModule(this,'normal')">中</button>
+  <button onclick="resizeModule(this,'wide')">长</button>
+  <button onclick="resizeModule(this,'full')">整行</button>
+  <button onclick="toggleModuleHeight(this)">折叠</button>
+</div><div class="sub">放在第一优先级：保留具体买点、待涨、弹性、止损、目标、回测和资金状态。</div></div><button class="ghost" onclick="showView('opportunity')">查看详情</button></div>
             <div id="overviewOpps" class="cards"><div class="empty">读取中…</div></div>
           </section>
 
-          <section class="panel overview-module" draggable="true" data-module="overviewWait">
-            <div class="panel-head"><div><h2>高弹性待涨池 <span class="module-handle">拖动排序</span></h2><div class="sub">总览也显示严筛池：待涨、空间、买点、换手都要满足。</div></div><button class="ghost" onclick="showView('opportunity')">全部</button></div>
+          <section class="panel overview-module" draggable="true" data-module="overviewWait" data-size="normal" data-height="normal">
+            <div class="panel-head"><div><h2>高弹性待涨池 <span class="module-handle">拖动排序</span></h2><div class="module-tools" data-tools>
+  <button onclick="resizeModule(this,'small')">短</button>
+  <button onclick="resizeModule(this,'normal')">中</button>
+  <button onclick="resizeModule(this,'wide')">长</button>
+  <button onclick="resizeModule(this,'full')">整行</button>
+  <button onclick="toggleModuleHeight(this)">折叠</button>
+</div><div class="sub">总览也显示严筛池：待涨、空间、买点、换手都要满足。</div></div><button class="ghost" onclick="showView('opportunity')">全部</button></div>
             <div id="overviewWaitPool" class="cards"><div class="empty">等待高弹性待涨池数据…</div></div>
           </section>
 
-          <section class="panel overview-module" draggable="true" data-module="overviewLive">
-            <div class="panel-head"><div><h2>实时雷达 <span class="module-handle">拖动排序</span></h2><div class="sub">总览直接看前 5 只实时异动，不用切页。</div></div><span class="badge" id="rtTimeOverview">—</span></div>
+          <section class="panel overview-module" draggable="true" data-module="overviewLive" data-size="normal" data-height="normal">
+            <div class="panel-head"><div><h2>实时雷达 <span class="module-handle">拖动排序</span></h2><div class="module-tools" data-tools>
+  <button onclick="resizeModule(this,'small')">短</button>
+  <button onclick="resizeModule(this,'normal')">中</button>
+  <button onclick="resizeModule(this,'wide')">长</button>
+  <button onclick="resizeModule(this,'full')">整行</button>
+  <button onclick="toggleModuleHeight(this)">折叠</button>
+</div><div class="sub">总览直接看前 5 只实时异动，不用切页。</div></div><span class="badge" id="rtTimeOverview">—</span></div>
             <div id="overviewLiveRadar" class="cards"><div class="empty">正在采样实时行情…</div></div>
           </section>
 
-          <section class="panel overview-module" draggable="true" data-module="overviewTrend">
-            <div class="panel-head"><div><h2>资金趋势感知 <span class="module-handle">拖动排序</span></h2><div class="sub">用来呈现今日机会与实时强弱，不是收益承诺。</div></div><span class="badge" id="marketAdvice">—</span></div>
+          <section class="panel overview-module" draggable="true" data-module="overviewTrend" data-size="normal" data-height="normal">
+            <div class="panel-head"><div><h2>资金趋势感知 <span class="module-handle">拖动排序</span></h2><div class="module-tools" data-tools>
+  <button onclick="resizeModule(this,'small')">短</button>
+  <button onclick="resizeModule(this,'normal')">中</button>
+  <button onclick="resizeModule(this,'wide')">长</button>
+  <button onclick="resizeModule(this,'full')">整行</button>
+  <button onclick="toggleModuleHeight(this)">折叠</button>
+</div><div class="sub">用来呈现今日机会与实时强弱，不是收益承诺。</div></div><span class="badge" id="marketAdvice">—</span></div>
             <div class="spark">
               <svg viewBox="0 0 800 160" preserveAspectRatio="none">
                 <defs><linearGradient id="g" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#5ee6ff" stop-opacity=".65"/><stop offset="1" stop-color="#5ee6ff" stop-opacity="0"/></linearGradient></defs>
@@ -302,8 +378,14 @@ details.more[open] summary{margin-bottom:8px}
             </div>
           </section>
 
-          <section class="panel overview-module" draggable="true" data-module="overviewSector">
-            <div class="panel-head"><div><h2>板块资金 Top <span class="module-handle">拖动排序</span></h2><div class="sub">新闻线索上下排版，不挤。</div></div><button class="ghost" onclick="loadSector(true)">刷新板块</button></div>
+          <section class="panel overview-module" draggable="true" data-module="overviewSector" data-size="normal" data-height="normal">
+            <div class="panel-head"><div><h2>板块资金 Top <span class="module-handle">拖动排序</span></h2><div class="module-tools" data-tools>
+  <button onclick="resizeModule(this,'small')">短</button>
+  <button onclick="resizeModule(this,'normal')">中</button>
+  <button onclick="resizeModule(this,'wide')">长</button>
+  <button onclick="resizeModule(this,'full')">整行</button>
+  <button onclick="toggleModuleHeight(this)">折叠</button>
+</div><div class="sub">新闻线索上下排版，不挤。</div></div><button class="ghost" onclick="loadSector(true)">刷新板块</button></div>
             <div id="overviewSector" class="sector-cards"><div class="empty">读取中…</div></div>
           </section>
         </div>
@@ -373,20 +455,53 @@ function showView(v){
 }
 $$('.nav-btn,.top-tab').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.view)));
 
+async function fetchLatestJson(){
+  const urls=[
+    './data/latest.json',
+    'data/latest.json',
+    '/investment-monitor/data/latest.json',
+    'https://raw.githubusercontent.com/tonykong120/investment-monitor/main/data/latest.json'
+  ];
+  let lastErr='';
+  for(const url of urls){
+    try{
+      const r=await fetch(`${url}${url.includes('?')?'&':'?'}t=${Date.now()}`,{cache:'no-store'});
+      if(!r.ok){lastErr=`${url} HTTP ${r.status}`; continue;}
+      const text=await r.text();
+      if(!text.trim().startsWith('{')){lastErr=`${url} 返回的不是JSON`; continue;}
+      return {data:JSON.parse(text), source:url};
+    }catch(e){lastErr=`${url} ${e.message||e}`;}
+  }
+  throw new Error(lastErr||'全部数据源读取失败');
+}
 async function loadData(force=false){
   try{
-    const r = await fetch(`./data/latest.json?t=${Date.now()}`,{cache:'no-store'});
-    DATA = await r.json();
-    $('#modelClock').textContent = DATA.updated_at || '—';
+    const pack=await fetchLatestJson();
+    DATA=pack.data;
+    const sourceNote=pack.source.includes('raw.githubusercontent')?'备用源':'主源';
+    $('#modelClock').textContent=DATA.updated_at||'—';
+    const age=modelAgeText(DATA.updated_at);
+    $('#modelAge').textContent=age[0]+'｜'+sourceNote;
+    $('#staleBadge').className='badge '+age[1];
+    $('#staleBadge').textContent='后台模型 '+age[0];
+    const errBox=$('#modelErrorBox');
+    if(errBox){errBox.style.display='none';errBox.textContent='';}
     const m=DATA.market||{};
-    $('#mScore').textContent = m.score ?? '—';
-    $('#mState').textContent = m.state || '—';
-    $('#marketAdvice').textContent = m.guidance || '—';
-    $('#poolCount').textContent = (DATA.high_elastic_wait_pool||[]).length;
-    renderAll();
-    loadSector(false);
+    $('#mScore').textContent=m.score??'—';
+    $('#mState').textContent=m.state||'—';
+    $('#marketAdvice').textContent=m.guidance||'—';
+    $('#poolCount').textContent=(DATA.high_elastic_wait_pool||[]).length;
+    renderAll(); loadSector(false);
   }catch(e){
-    $('#modelClock').textContent = '读取失败';
+    $('#modelClock').textContent='读取失败';
+    $('#modelAge').textContent='请检查 data/latest.json 或 Actions';
+    $('#staleBadge').className='badge bad';
+    $('#staleBadge').textContent='后台模型读取失败';
+    const errBox=$('#modelErrorBox');
+    if(errBox){
+      errBox.style.display='block';
+      errBox.innerHTML=`后台模型读取失败：${String(e.message||e)}<br>处理：确认 GitHub 里存在 <b>data/latest.json</b>，然后到 Actions → Refresh market scan → Run workflow。页面会自动尝试备用 raw 数据源。`;
+    }
   }
 }
 function renderAll(){renderOpps();renderWaitPool();renderWatch();renderRisk();renderOverview();}
@@ -659,51 +774,74 @@ setInterval(()=>loadSector(false),30000);
 </script>
 
 
-<script id="v212-drag-js">
+<script id="v213-layout-js">
 (function(){
-  function applyOrder(){
-    const grid=document.getElementById('overviewGrid');
-    if(!grid)return;
-    let order=[];
-    try{order=JSON.parse(localStorage.getItem('overviewModuleOrder')||'[]')}catch(e){}
-    if(order.length){
-      const map={};
-      [...grid.children].forEach(el=>map[el.dataset.module]=el);
-      order.forEach(k=>{if(map[k])grid.appendChild(map[k])});
-    }
+  function grid(){return document.getElementById('overviewGrid')}
+  function readLayout(){
+    try{return JSON.parse(localStorage.getItem('overviewLayoutV213')||'{}')}catch(e){return {}}
   }
-  function saveOrder(){
-    const grid=document.getElementById('overviewGrid');
-    if(!grid)return;
-    localStorage.setItem('overviewModuleOrder',JSON.stringify([...grid.children].map(x=>x.dataset.module)));
+  function saveLayout(){
+    const g=grid(); if(!g)return;
+    const layout={order:[...g.children].map(x=>x.dataset.module),sizes:{},heights:{}};
+    [...g.children].forEach(el=>{
+      layout.sizes[el.dataset.module]=el.dataset.size||'normal';
+      layout.heights[el.dataset.module]=el.dataset.height||'normal';
+    });
+    localStorage.setItem('overviewLayoutV213',JSON.stringify(layout));
+  }
+  function applyLayout(){
+    const g=grid(); if(!g)return;
+    const layout=readLayout();
+    if(layout.order&&layout.order.length){
+      const map={}; [...g.children].forEach(el=>map[el.dataset.module]=el);
+      layout.order.forEach(k=>{if(map[k])g.appendChild(map[k])});
+    }
+    [...g.children].forEach(el=>{
+      const k=el.dataset.module;
+      if(layout.sizes&&layout.sizes[k])el.dataset.size=layout.sizes[k];
+      if(layout.heights&&layout.heights[k])el.dataset.height=layout.heights[k];
+    });
   }
   function initDrag(){
-    const grid=document.getElementById('overviewGrid');
-    if(!grid||grid.dataset.dragReady)return;
-    grid.dataset.dragReady='1';
+    const g=grid(); if(!g||g.dataset.dragReady)return;
+    g.dataset.dragReady='1';
     let dragging=null;
-    grid.addEventListener('dragstart',e=>{
+    g.addEventListener('dragstart',e=>{
+      if(e.target.closest('.module-tools')){e.preventDefault();return;}
       const el=e.target.closest('.overview-module');
       if(!el)return;
       dragging=el; el.classList.add('dragging');
       e.dataTransfer.effectAllowed='move';
     });
-    grid.addEventListener('dragend',e=>{
+    g.addEventListener('dragend',()=>{
       if(dragging)dragging.classList.remove('dragging');
-      dragging=null; saveOrder();
+      dragging=null; saveLayout();
     });
-    grid.addEventListener('dragover',e=>{
+    g.addEventListener('dragover',e=>{
       e.preventDefault();
-      const after=[...grid.querySelectorAll('.overview-module:not(.dragging)')].find(el=>{
-        const r=el.getBoundingClientRect();
-        return e.clientY < r.top + r.height/2 && e.clientX < r.right;
-      });
       if(!dragging)return;
-      if(after)grid.insertBefore(dragging,after); else grid.appendChild(dragging);
+      const modules=[...g.querySelectorAll('.overview-module:not(.dragging)')];
+      let closest=null, closestOffset=Number.NEGATIVE_INFINITY;
+      modules.forEach(el=>{
+        const box=el.getBoundingClientRect();
+        const offset=e.clientY-box.top-box.height/2;
+        if(offset<0 && offset>closestOffset){closestOffset=offset; closest=el;}
+      });
+      if(closest)g.insertBefore(dragging,closest); else g.appendChild(dragging);
     });
   }
-  document.addEventListener('DOMContentLoaded',()=>{applyOrder();initDrag();});
-  setTimeout(()=>{applyOrder();initDrag();},800);
+  window.resizeModule=function(btn,size){
+    const el=btn.closest('.overview-module'); if(!el)return;
+    el.dataset.size=size; saveLayout();
+  }
+  window.toggleModuleHeight=function(btn){
+    const el=btn.closest('.overview-module'); if(!el)return;
+    el.dataset.height=(el.dataset.height==='short')?'normal':'short';
+    btn.textContent=el.dataset.height==='short'?'展开':'折叠';
+    saveLayout();
+  }
+  document.addEventListener('DOMContentLoaded',()=>{applyLayout();initDrag();});
+  setTimeout(()=>{applyLayout();initDrag();},800);
 })();
 </script>
 
